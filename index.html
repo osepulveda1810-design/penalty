@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#071923" />
+  <title>Penales 3D — prototipo</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #071923; touch-action: none; }
+    #game { position: fixed; inset: 0; }
+    canvas { display: block; width: 100%; height: 100%; }
+    .hud { position: fixed; z-index: 2; inset: max(12px, env(safe-area-inset-top)) 12px auto; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; }
+    .pill { background: #071923cc; border: 1px solid #ffffff30; border-radius: 14px; padding: 8px 12px; color: white; font-size: 14px; font-weight: 700; backdrop-filter: blur(8px); }
+    #message { position: fixed; z-index: 3; left: 50%; top: 23%; transform: translateX(-50%); background: #071923dd; color: white; border: 1px solid #ffffff40; border-radius: 14px; padding: 10px 16px; font-weight: 700; text-align: center; pointer-events: none; }
+    #hint { position: fixed; z-index: 2; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: max-content; max-width: calc(100% - 28px); text-align: center; color: white; background: #071923c9; border: 1px solid #ffffff30; border-radius: 16px; padding: 10px 14px; font-size: 14px; pointer-events: none; }
+    #reset { position: fixed; z-index: 4; right: 12px; bottom: max(16px, env(safe-area-inset-bottom)); border: 0; border-radius: 14px; padding: 10px 13px; background: #ffffffeb; color: #18212a; font-weight: 800; font-size: 13px; }
+    #role-select { position: fixed; z-index: 10; inset: 0; display: grid; place-items: center; padding: 22px; background: #06141ddd; }
+    #rotate-prompt { display: none; position: fixed; z-index: 20; inset: 0; place-items: center; padding: 28px; background: #071923; color: white; text-align: center; font-size: 20px; font-weight: 800; }
+    #rotate-prompt span { display: block; margin-top: 10px; font-size: 15px; font-weight: 500; color: #bdd0d8; }
+    @media (orientation: landscape) and (max-height: 600px) { #rotate-prompt { display: grid; } }
+    .role-card { width: min(440px,100%); padding: 24px 20px; border: 1px solid #ffffff44; border-radius: 22px; background: #0b2633f2; color: white; text-align: center; box-shadow: 0 18px 55px #0008; }
+    .role-card h2 { margin: 0 0 8px; font-size: 25px; }
+    .role-card p { margin: 0 0 18px; color: #d6e2e8; line-height: 1.45; }
+    .role-card button { display: block; width: 100%; margin-top: 10px; padding: 14px; border: 0; border-radius: 14px; background: #f4c542; color: #18212a; font-size: 16px; font-weight: 900; }
+    .role-card button:last-child { background: #54b4e6; }
+    #character-select { display: none; position: fixed; z-index: 11; inset: 0; place-items: center; overflow-y: auto; padding: 16px; background: #06141df2; }
+    .character-panel { width: min(480px,100%); max-height: 94vh; overflow-y: auto; padding: 20px 16px; border: 1px solid #ffffff44; border-radius: 22px; background: #0b2633f5; color: white; text-align: center; }
+    .character-panel h2 { margin: 6px 0 4px; }
+    .character-panel p { margin: 0 0 14px; color: #d6e2e8; font-size: 13px; line-height: 1.4; }
+    #character-options { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .character-option { min-height: 74px; display: flex; align-items: center; gap: 10px; padding: 10px; border: 2px solid #ffffff35; border-radius: 14px; background: #ffffff0c; color: white; text-align: left; font-weight: 750; }
+    .character-option.selected { border-color: #f4c542; background: #f4c54222; }
+    .character-avatar { width: 42px; height: 66px; flex: 0 0 42px; display: grid; place-items: center; overflow: hidden; border-radius: 7px; color: white; font-size: 12px; font-weight: 900; text-shadow: 0 1px 3px #000; }
+    .character-avatar img { display: block; width: 100%; height: 100%; object-fit: contain; }
+    .character-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 13px; }
+    .character-actions button, #custom-upload { border: 0; border-radius: 13px; padding: 12px 9px; background: #ffffffeb; color: #18212a; font-weight: 850; }
+    #start-game { background: #f4c542; }
+    #start-game:disabled { opacity: .45; }
+    #character-label { max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+    @media (max-height: 650px) { .character-panel { padding: 12px; } .character-option { min-height: 62px; padding: 7px; } }
+    #trace-layer { position: fixed; z-index: 1; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    #hint.keeper-hint { top: 58px; bottom: auto; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); font-size: 12px; }
+    @media (max-height: 560px) { .hud { inset: 8px 8px auto; } #message { top: 20%; } #hint, #reset { bottom: 8px; } }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div class="hud"><div class="pill">⚽ PENAL 3D</div><div class="pill" id="character-label">Elige personaje</div><div class="pill"><span id="score-label">Goles:</span> <span id="score">0</span> / 5</div></div>
+  <div id="message">Ajusta la trayectoria y suelta para disparar</div>
+  <div id="hint">Arrastra hacia los lados y arriba o abajo; suelta para disparar</div>
+  <canvas id="trace-layer" aria-hidden="true"></canvas>
+  <button id="reset">Reiniciar</button>
+  <div id="role-select"><div class="role-card"><h2>Penales 3D</h2><p>Primero elige cómo quieres jugar.</p><button id="play-shooter">QUIERO PATEAR</button><button id="play-keeper">QUIERO ATAJAR</button></div></div>
+  <div id="character-select"><div class="character-panel"><h2 id="character-title">Elige tu personaje</h2><p id="character-note">Elige uno de los cinco personajes disponibles para esta posición.</p><div id="character-options"></div><div class="character-actions"><button id="cancel-character" type="button">Volver</button><button id="start-game" type="button" disabled>Empezar</button></div></div></div>
+  <div id="rotate-prompt">Este juego está diseñado para jugarse en vertical.<span>Gira el teléfono para continuar.</span></div>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+    const mount = document.querySelector('#game');
+    const scoreEl = document.querySelector('#score');
+    const message = document.querySelector('#message');
+    const hint = document.querySelector('#hint');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x85c9ec);
+    scene.fog = new THREE.Fog(0x85c9ec, 24, 60);
+    const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(0, 5.2, 14.8);
+    camera.lookAt(0, 2.3, -8);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    mount.appendChild(renderer.domElement);
+
+    scene.add(new THREE.HemisphereLight(0xe7f8ff, 0x38623e, 2.0));
+    const sun = new THREE.DirectionalLight(0xfff1d2, 2.4);
+    sun.position.set(-5, 12, 7); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); scene.add(sun);
+
+    // Cancha procedural: franjas de césped y líneas pintadas.
+    const grass = new THREE.Group(); scene.add(grass);
+    const base = new THREE.Mesh(new THREE.PlaneGeometry(48, 60), new THREE.MeshStandardMaterial({ color: 0x236b3e, roughness: 1 }));
+    base.rotation.x = -Math.PI / 2; base.position.set(0, -0.03, -8); base.receiveShadow = true; scene.add(base);
+    for (let i = 0; i < 10; i++) {
+      const stripe = new THREE.Mesh(new THREE.PlaneGeometry(48, 6), new THREE.MeshStandardMaterial({ color: i % 2 ? 0x2c7a46 : 0x34884c, roughness: 1 }));
+      stripe.rotation.x = -Math.PI / 2; stripe.position.set(0, 0.001, -34 + i * 6); stripe.receiveShadow = true; grass.add(stripe);
+    }
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    function line(x, z, w, d) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), lineMat); m.rotation.x = -Math.PI/2; m.position.set(x, 0.013, z); scene.add(m); }
+    line(0, -3.1, 20, 0.09); line(-9.95, -7, 0.09, 8); line(9.95, -7, 0.09, 8); line(0, -10.95, 20, 0.09);
+    line(-3.65, -14.2, 0.07, 6.5); line(3.65, -14.2, 0.07, 6.5); line(0, -17.45, 7.3, 0.07);
+    const spot = new THREE.Mesh(new THREE.CircleGeometry(0.09, 24), lineMat); spot.rotation.x=-Math.PI/2; spot.position.set(0,0.02,0.4); scene.add(spot);
+
+    // Tribunas sencillas para dar profundidad al entorno.
+    const standMat = new THREE.MeshStandardMaterial({ color: 0x314957, roughness: 0.9 });
+    for (const side of [-1, 1]) {
+      const stand = new THREE.Mesh(new THREE.BoxGeometry(5.5, 4, 30), standMat); stand.position.set(side * 13, 2, -12); scene.add(stand);
+      for (let row = 0; row < 5; row++) {
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(5.7, 0.18, 30), new THREE.MeshStandardMaterial({ color: row % 2 ? 0x406779 : 0x3c5b69 }));
+        seat.position.set(side * 13, 0.45 + row * 0.65, -12); scene.add(seat);
+      }
+    }
+
+    // Arco y red.
+    const goalZ = -19.8, goalW = 7.32, goalH = 2.45;
+    const KEEPER_Z = goalZ + 1.25; // Delante de la línea del arco, hacia el punto penal.
+    const postMat = new THREE.MeshStandardMaterial({ color: 0xf4f5ef, metalness: 0.15, roughness: 0.28 });
+    function bar(x,y,z,w,h,d) { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), postMat); m.position.set(x,y,z); m.castShadow=true; scene.add(m); return m; }
+    bar(-goalW/2, goalH/2, goalZ, 0.16, goalH, 0.16); bar(goalW/2, goalH/2, goalZ, 0.16, goalH, 0.16); bar(0, goalH, goalZ, goalW+0.15, 0.16, 0.16);
+    const net = new THREE.Mesh(new THREE.PlaneGeometry(goalW, goalH), new THREE.MeshBasicMaterial({ color: 0xd9e4df, transparent: true, opacity: 0.19, side: THREE.DoubleSide, wireframe: true }));
+    net.position.set(0, goalH/2, goalZ + 0.9); scene.add(net);
+    for (const x of [-goalW/2,goalW/2]) { const back = bar(x,1.15,goalZ+0.45,0.12,2.3,0.9); }
+    bar(0,0.06,goalZ+0.45,goalW,0.12,0.9);
+
+    // Sprites de personajes dibujados como placeholders: luego se cambian por renders frontal/perfil/trasera.
+    function makeSprite(kind, shirtColor) {
+      const c = document.createElement('canvas'); c.width = 128; c.height = 256;
+      const g = c.getContext('2d');
+      // sombra suave
+      g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(64,244,31,7,0,0,Math.PI*2); g.fill();
+      // piernas
+      g.fillStyle = '#202a38'; g.fillRect(43,151,18,78); g.fillRect(68,151,18,78);
+      g.fillStyle = '#f1f1eb'; g.fillRect(39,224,25,12); g.fillRect(65,224,26,12);
+      // brazos y cuerpo
+      g.fillStyle = shirtColor; g.beginPath(); g.roundRect(31,72,66,91,16); g.fill();
+      g.fillStyle = '#f2bd91'; g.fillRect(23,83,14,64); g.fillRect(91,83,14,64);
+      // cuello y cabeza
+      g.fillStyle = '#e8af80'; g.fillRect(54,59,21,22); g.beginPath(); g.ellipse(64,39,25,30,0,0,Math.PI*2); g.fill();
+      g.fillStyle = '#34251f'; g.beginPath(); g.ellipse(64,24,26,17,0,Math.PI,Math.PI*2); g.fill();
+      if (kind === 'keeper') { g.fillStyle='#fff'; g.beginPath(); g.arc(46,40,3,0,Math.PI*2);g.arc(81,40,3,0,Math.PI*2);g.fill(); g.fillStyle='#222';g.fillRect(36,98,55,8); }
+      else { g.fillStyle='#fff'; g.beginPath(); g.arc(55,41,2.5,0,Math.PI*2);g.arc(73,41,2.5,0,Math.PI*2);g.fill(); }
+      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter;
+      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+      return new THREE.Sprite(mat);
+    }
+    const keeper = makeSprite('keeper', '#e64c3c'); keeper.position.set(0,1.6,KEEPER_Z); keeper.scale.set(1.45,2.9,1); scene.add(keeper);
+    let keeperFrontTexture=keeper.material.map;
+    const defaultKeeperFrontTexture=keeper.material.map;
+    function makeKeeperBackTexture(shirtColor='#e64c3c'){
+      const c=document.createElement('canvas');c.width=128;c.height=256;const g=c.getContext('2d');
+      g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.ellipse(64,244,31,7,0,0,Math.PI*2);g.fill();
+      g.fillStyle='#202a38';g.fillRect(42,151,19,77);g.fillRect(68,151,19,77);
+      g.fillStyle='#eeeeea';g.fillRect(38,224,27,12);g.fillRect(64,224,27,12);
+      g.fillStyle=shirtColor;g.beginPath();g.roundRect(31,72,66,91,16);g.fill();
+      g.fillRect(23,83,14,64);g.fillRect(91,83,14,64);
+      g.fillStyle='#e8af80';g.fillRect(54,59,21,22);g.beginPath();g.ellipse(64,39,25,30,0,0,Math.PI*2);g.fill();
+      g.fillStyle='#34251f';g.beginPath();g.ellipse(64,24,26,17,0,Math.PI,Math.PI*2);g.fill();g.fillRect(39,24,50,18);
+      g.fillStyle='#fff';g.font='bold 42px system-ui';g.textAlign='center';g.fillText('1',64,132);
+      const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
+    }
+    let keeperBackTexture=makeKeeperBackTexture();
+    const defaultKeeperBackTexture=keeperBackTexture;
+    const player = makeSprite('player', '#2374d8'); player.position.set(0,1.55,4.7); player.scale.set(1.15,2.3,1); scene.add(player);
+    const defaultPlayerTexture=player.material.map;
+
+    // Balón de fútbol con patrón sencillo.
+    const ball = new THREE.Group(); scene.add(ball);
+    const ballMesh = new THREE.Mesh(new THREE.SphereGeometry(0.36, 24, 18), new THREE.MeshStandardMaterial({ color: 0xf5f4ed, roughness: 0.56 })); ballMesh.castShadow=true; ball.add(ballMesh);
+    const patchMat = new THREE.MeshStandardMaterial({ color: 0x20252b, roughness: 0.8 });
+    for(let i=0;i<5;i++){ const p=new THREE.Mesh(new THREE.SphereGeometry(0.115,8,6),patchMat); const a=i*Math.PI*2/5; p.position.set(Math.cos(a)*0.28,Math.sin(a)*0.12,Math.sin(a)*0.28); ball.add(p); }
+    const startBall = new THREE.Vector3(0,0.37,0.4); ball.position.copy(startBall);
+    const SHOT_SPEED=26;
+    const KEEPER_SHOT_SPEED=21;
+
+    let score=0, shots=0, flying=false, shotData=null, pendingShotData=null, pointerStart=null, aimX=0, aimY=0, role='shooter', keeperDiveMode='mid', keeperTimer=null, keeperHome=keeper.position.clone(), diveInputX=0, diveInputY=0, diveCommitted=false, playerKickAnimation=null;
+    const trajectoryPreview = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xffd43b, transparent: true, opacity: 0.92 }));
+    trajectoryPreview.frustumCulled=false; trajectoryPreview.renderOrder=2; scene.add(trajectoryPreview);
+    const aimArrow = new THREE.ArrowHelper(new THREE.Vector3(0,0,-1), new THREE.Vector3(0,0.12,0.4), 0.7, 0xffd43b, 0.25, 0.16);
+    aimArrow.line.material.transparent=true; aimArrow.line.material.opacity=0.9; scene.add(aimArrow);
+    const keeperMarker=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.42,0.12,20),new THREE.MeshStandardMaterial({color:0xffd43b,emissive:0x614600}));
+    keeperMarker.position.set(0,0.08,goalZ+0.55); keeperMarker.visible=false; scene.add(keeperMarker);
+    const roleSelect=document.querySelector('#role-select'), scoreLabel=document.querySelector('#score-label');
+    const characterSelect=document.querySelector('#character-select'), characterOptionsEl=document.querySelector('#character-options');
+    const characterTitle=document.querySelector('#character-title'), characterLabel=document.querySelector('#character-label');
+    const startGameButton=document.querySelector('#start-game');
+    const characterChoices={
+      shooter:[
+        {id:'cr7',name:'Cristiano Ronaldo',short:'CR7',color:'#b32635'},
+        {id:'mbappe',name:'Kylian Mbappé',short:'KM',color:'#263b78'},
+        {id:'messi',name:'Lionel Messi',short:'LM',color:'#3398d4'},
+        {id:'neymar',name:'Neymar Jr.',short:'NJ',color:'#e3c329'},
+        {id:'joaquin',name:'Joaquín Sepúlveda',short:'JS',color:'#b32635'}
+      ],
+      keeper:[
+        {id:'dibu',name:'Emiliano Martínez',short:'EM',color:'#23945b'},
+        {id:'courtois',name:'Thibaut Courtois',short:'TC',color:'#145a32'},
+        {id:'alisson',name:'Alisson Becker',short:'AB',color:'#e0b72e'},
+        {id:'donnarumma',name:'Gianluigi Donnarumma',short:'GD',color:'#2875bd'},
+        {id:'iker',name:'Iker Casillas',short:'IC',color:'#23945b'}
+      ]
+    };
+    const spriteTextureOrder=['cr7_front','cr7_back','mbappe_front','mbappe_back','messi_front','messi_back','neymar_front','neymar_back','joaquin_front','joaquin_back','dibu_front','dibu_back','courtois_front','courtois_back','alisson_front','alisson_back','donnarumma_front','donnarumma_back','iker_front','iker_back'];
+    const spriteTextures=Object.create(null);
+    const cr7KickFrames=[];
+    let activePlayerKickFrames=null, activePlayerIdleTexture=null;
+    let spriteAssetsReady=false, pendingRole='shooter', selectedCharacter=null;
+    function canStartSelectedCharacter(){return !!selectedCharacter && spriteAssetsReady && (selectedCharacter.id!=='cr7' || cr7KickFrames.length===5);}
+    const traceLayer=document.querySelector('#trace-layer'), traceCtx=traceLayer.getContext('2d');
+    const spriteAtlasImage=new Image();
+    spriteAtlasImage.onload=()=>{
+      const cellW=80,cellH=160,columns=4;
+      spriteTextureOrder.forEach((key,index)=>{
+        const canvas=document.createElement('canvas'); canvas.width=cellW; canvas.height=cellH;
+        canvas.getContext('2d').drawImage(spriteAtlasImage,(index%columns)*cellW,Math.floor(index/columns)*cellH,cellW,cellH,0,0,cellW,cellH);
+        const texture=new THREE.CanvasTexture(canvas); texture.colorSpace=THREE.SRGBColorSpace; texture.magFilter=THREE.LinearFilter; texture.minFilter=THREE.LinearMipmapLinearFilter;
+        spriteTextures[key]=texture;
+      });
+      spriteAssetsReady=true; if(selectedCharacter)startGameButton.disabled=!canStartSelectedCharacter();
+      renderCharacterOptions();
+    };
+    spriteAtlasImage.onerror=()=>{spriteAssetsReady=true;if(selectedCharacter)startGameButton.disabled=!canStartSelectedCharacter();};
+    spriteAtlasImage.src='assets/personajes.webp';
+    const cr7KickSheetImage=new Image();
+    cr7KickSheetImage.onload=()=>{
+      const frames=5,cellW=cr7KickSheetImage.naturalWidth/frames,cellH=cr7KickSheetImage.naturalHeight;
+      for(let i=0;i<frames;i++){
+        const cell=document.createElement('canvas');cell.width=Math.ceil(cellW);cell.height=cellH;
+        const cellCtx=cell.getContext('2d');cellCtx.drawImage(cr7KickSheetImage,i*cellW,0,cellW,cellH,0,0,cell.width,cell.height);
+        const pixels=cellCtx.getImageData(0,0,cell.width,cell.height).data;let minX=cell.width,minY=cell.height,maxX=-1,maxY=-1;
+        for(let y=0;y<cell.height;y++)for(let x=0;x<cell.width;x++)if(pixels[(y*cell.width+x)*4+3]>16){if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;}
+        const canvas=document.createElement('canvas');canvas.width=128;canvas.height=256;
+        if(maxX>=minX&&maxY>=minY){
+          const cropW=maxX-minX+1,cropH=maxY-minY+1,scale=Math.min(116/cropW,244/cropH),drawW=cropW*scale,drawH=cropH*scale;
+          canvas.getContext('2d').drawImage(cell,minX,minY,cropW,cropH,(128-drawW)/2,252-drawH,drawW,drawH);
+        }
+        const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;cr7KickFrames.push(texture);
+      }
+      if(selectedCharacter)startGameButton.disabled=!canStartSelectedCharacter();
+    };
+    cr7KickSheetImage.src='assets/cr7-kick.webp';
+    function renderCharacterOptions(){
+      characterOptionsEl.replaceChildren();
+      for(const character of characterChoices[pendingRole]){
+        const button=document.createElement('button'); button.type='button';
+        button.className='character-option'+(selectedCharacter===character?' selected':'');
+        const avatar=document.createElement('span'); avatar.className='character-avatar'; avatar.style.background=character.color;
+        const texture=spriteTextures[`${character.id}_front`];
+        if(texture?.image){const img=document.createElement('img');img.alt='';img.src=texture.image.toDataURL('image/png');avatar.appendChild(img);}else avatar.textContent=character.short;
+        const name=document.createElement('span'); name.textContent=character.name;
+        button.append(avatar,name);
+        button.addEventListener('click',()=>{selectedCharacter=character;startGameButton.disabled=!canStartSelectedCharacter();renderCharacterOptions();});
+        characterOptionsEl.appendChild(button);
+      }
+    }
+    function openCharacterSelect(nextRole){
+      pendingRole=nextRole; selectedCharacter=null; startGameButton.disabled=true;
+      characterTitle.textContent=nextRole==='shooter'?'Elige tu jugador':'Elige tu arquero';
+      renderCharacterOptions(); roleSelect.style.display='none'; characterSelect.style.display='grid';
+    }
+    function startSelectedGame(){
+      if(!canStartSelectedCharacter()) return;
+      const front=spriteTextures[`${selectedCharacter.id}_front`];
+      const back=spriteTextures[`${selectedCharacter.id}_back`];
+      if(pendingRole==='shooter'){
+        activePlayerKickFrames=selectedCharacter.id==='cr7' && cr7KickFrames.length===5 ? cr7KickFrames : null;
+        activePlayerIdleTexture=activePlayerKickFrames?.[0] || back || front || defaultPlayerTexture;
+        player.material.map=activePlayerIdleTexture; player.material.needsUpdate=true;
+        keeperFrontTexture=defaultKeeperFrontTexture; keeperBackTexture=defaultKeeperBackTexture;
+      }else{
+        activePlayerKickFrames=null; activePlayerIdleTexture=defaultPlayerTexture;
+        player.material.map=defaultPlayerTexture; player.material.needsUpdate=true;
+        keeperFrontTexture=front || defaultKeeperFrontTexture; keeperBackTexture=back || front || defaultKeeperBackTexture;
+      }
+      keeper.material.needsUpdate=true;
+      characterLabel.textContent=(pendingRole==='shooter'?'Jugador: ':'Arquero: ')+selectedCharacter.name;
+      characterSelect.style.display='none'; selectRole(pendingRole);
+    }
+    document.querySelector('#play-shooter').addEventListener('click',()=>openCharacterSelect('shooter'));
+    document.querySelector('#play-keeper').addEventListener('click',()=>openCharacterSelect('keeper'));
+    document.querySelector('#cancel-character').addEventListener('click',()=>{characterSelect.style.display='none';roleSelect.style.display='grid';});
+    startGameButton.addEventListener('click',startSelectedGame);
+    function getAimShot(){
+      const flightTime=(KEEPER_Z-startBall.z)/-SHOT_SPEED;
+      return {flightTime,velocityY:2.2+(aimY+1)*2.1,gravity:10.5};
+    }
+    function updateAim(){
+      const {flightTime,velocityY,gravity}=getAimShot();
+      const velocityX=aimX/flightTime, points=[];
+      const steps=28;
+      for(let i=0;i<=steps;i++){
+        const t=flightTime*i/steps;
+        const y=Math.max(0.36,startBall.y+velocityY*t-0.5*gravity*t*t);
+        points.push(new THREE.Vector3(velocityX*t,y,startBall.z-SHOT_SPEED*t));
+      }
+      trajectoryPreview.geometry.dispose();
+      trajectoryPreview.geometry=new THREE.BufferGeometry().setFromPoints(points);
+      const tip=points[points.length-1];
+      const tangent=new THREE.Vector3(velocityX,velocityY-gravity*flightTime,-SHOT_SPEED).normalize();
+      aimArrow.position.copy(tip); aimArrow.setDirection(tangent); aimArrow.setLength(0.7,0.25,0.16);
+      camera.lookAt(aimX*0.55,2.3+aimY*0.2,-8);
+    }
+    function show(text){ message.textContent=text; message.style.display='block'; }
+    function hideMessage(){ message.style.display='none'; }
+    function resizeTrace(){const dpr=Math.min(devicePixelRatio,2);traceLayer.width=innerWidth*dpr;traceLayer.height=innerHeight*dpr;traceCtx.setTransform(dpr,0,0,dpr,0,0);traceCtx.clearRect(0,0,innerWidth,innerHeight);}
+    function clearTrace(){traceCtx.clearRect(0,0,innerWidth,innerHeight);}
+    function drawTrace(x1,y1,x2,y2){
+      clearTrace();const angle=Math.atan2(y2-y1,x2-x1),head=18;
+      traceCtx.save();traceCtx.lineWidth=7;traceCtx.lineCap='round';traceCtx.strokeStyle='#ffe05b';traceCtx.shadowColor='#0009';traceCtx.shadowBlur=8;
+      traceCtx.beginPath();traceCtx.moveTo(x1,y1);traceCtx.lineTo(x2,y2);traceCtx.stroke();traceCtx.beginPath();traceCtx.moveTo(x2,y2);traceCtx.lineTo(x2-head*Math.cos(angle-.55),y2-head*Math.sin(angle-.55));traceCtx.lineTo(x2-head*Math.cos(angle+.55),y2-head*Math.sin(angle+.55));traceCtx.closePath();traceCtx.fillStyle='#ffe05b';traceCtx.fill();traceCtx.restore();
+    }
+    resizeTrace();
+    function resetBall(){ ball.position.copy(startBall); ball.rotation.set(0,0,0); flying=false; shotData=null; pendingShotData=null; if(role==='shooter')keeper.position.copy(keeperHome);else keeper.position.set(0,1.1,KEEPER_Z); keeper.material.rotation=0; player.position.set(0,1.55,6.2); player.material.rotation=0; playerKickAnimation=null; if(activePlayerIdleTexture){player.material.map=activePlayerIdleTexture;player.material.needsUpdate=true;} keeperMarker.position.x=keeper.position.x; }
+    function startPlayerKick(){
+      player.position.set(0,1.55,6.2); player.material.rotation=0;
+      if(role==='shooter' && activePlayerKickFrames){player.material.map=activePlayerKickFrames[0];player.material.needsUpdate=true;}
+      playerKickAnimation={elapsed:0,duration:0.46,launchAt:0.36,frames:role==='shooter'?activePlayerKickFrames:null,fromX:0,toX:-0.22,fromZ:6.2,toZ:2.45};
+    }
+    function startDive(){
+      if(role!=='keeper' || !flying || !shotData || diveCommitted || Math.hypot(diveInputX,diveInputY)<0.22) return;
+      diveCommitted=true;
+      shotData.diveMode=keeperDiveMode;
+      shotData.diveAnimation={at:shotData.elapsed,duration:0.34,fromX:keeper.position.x,fromY:keeper.position.y,fromRotation:keeper.material.rotation,toX:diveInputX*2.75,toY:THREE.MathUtils.clamp(1.1+diveInputY*0.72,0.35,1.82),toRotation:diveInputX*0.65};
+    }
+    function launchKeeperShot(){
+      if(role!=='keeper' || shots>=5) return;
+      ball.position.copy(startBall); ball.rotation.set(0,0,0); ball.visible=true;
+      keeper.position.set(0,1.1,KEEPER_Z); keeper.material.rotation=0; keeperMarker.position.x=0;
+      player.position.set(0,1.55,6.2); player.material.rotation=0; playerKickAnimation=null;
+      show('Prepárate: viene el tiro'); hint.textContent=`Tiro ${shots+1} de 5 · prepárate para atajar`;
+      keeperTimer=setTimeout(()=>{
+        if(role!=='keeper' || shots>=5) return;
+        startPlayerKick();
+        const targetX=(Math.random()-0.5)*5.6, mode=Math.random()<0.55?'low':'high';
+        const flightTime=(KEEPER_Z-startBall.z)/-KEEPER_SHOT_SPEED;
+        shotData={velocity:new THREE.Vector3(targetX/flightTime,mode==='high'?6.4:2.0,-KEEPER_SHOT_SPEED),gravity:mode==='high'?10.5:4.0,elapsed:0,targetX,mode};
+        shots++; flying=true; diveCommitted=false; hideMessage(); hint.textContent=`Tiro ${shots} de 5 · traza hacia dónde lanzarte`;
+        startDive();
+        if(diveCommitted){diveInputX=0;diveInputY=0;keeperDiveMode='mid';pointerStart=null;clearTrace();}
+      },650);
+    }
+    function selectRole(nextRole){
+      try { const lock=screen.orientation?.lock?.('portrait'); if(lock?.catch) lock.catch(()=>{}); } catch {}
+      role=nextRole; score=0; shots=0; aimX=0; aimY=0; keeperDiveMode='mid'; diveInputX=0; diveInputY=0; diveCommitted=false; playerKickAnimation=null; clearTrace(); resetBall();
+      scoreEl.textContent='0'; roleSelect.style.display='none';
+      if(keeperTimer) clearTimeout(keeperTimer);
+      if(role==='shooter'){
+        camera.position.set(0,5.2,14.8); keeper.visible=true; keeper.material.map=keeperFrontTexture; keeper.material.needsUpdate=true; keeper.scale.set(1.45,2.9,1); player.visible=true; aimArrow.visible=true; trajectoryPreview.visible=true; keeperMarker.visible=false;
+        hint.classList.remove('keeper-hint'); clearTrace();
+        scoreLabel.textContent='Goles:';
+        hint.textContent='Arrastra la flecha a los lados y en vertical; suelta para disparar'; updateAim(); show('Ajusta la trayectoria y suelta para disparar');
+      } else {
+        // Cámara detrás del arco; el arquero queda adelantado a la línea, hacia el punto penal.
+        // Encuadre vertical, alejado y levemente elevado para seguir el balón y la atajada.
+        camera.position.set(0,3.35,goalZ-12.0); camera.lookAt(0,1.55,0.5); keeper.visible=true; keeper.material.map=keeperBackTexture; keeper.material.needsUpdate=true; keeper.scale.set(1.0,2.0,1); player.visible=true; aimArrow.visible=false; trajectoryPreview.visible=false; keeperMarker.visible=true;
+        keeper.position.set(0,1.1,KEEPER_Z); keeperMarker.position.x=0;
+        hint.classList.add('keeper-hint'); clearTrace();
+        scoreLabel.textContent='Atajadas:'; hint.textContent='Desliza hacia donde quieres que se lance el arquero'; show('Traza la dirección de la atajada');
+        keeperTimer=setTimeout(launchKeeperShot,1700);
+      }
+    }
+    function shoot(){
+      if(role!=='shooter' || flying || shots>=5) return;
+      const {flightTime,velocityY,gravity}=getAimShot();
+      const mode=aimY>0.12?'high':'low';
+      const nextShotData={velocity:new THREE.Vector3(aimX/flightTime,velocityY,-SHOT_SPEED),gravity,elapsed:0,targetX:aimX,mode};
+      const predictsSide=Math.random()<0.38;
+      const dive=predictsSide?aimX+(Math.random()-0.5)*0.8:(Math.random()-0.5)*4.8;
+      nextShotData.keeperTargetX=THREE.MathUtils.clamp(dive,-2.45,2.45); nextShotData.keeperReactAt=0.16;
+      pendingShotData=nextShotData; shotData=null;
+      startPlayerKick(); flying=true; shots++; hideMessage(); hint.textContent=`Tiros: ${shots} de 5`;
+      keeper.material.rotation=0;
+    }
+    function updateShooterAim(e){
+      const dx=e.clientX-pointerStart.x,dy=e.clientY-pointerStart.y;
+      aimX=THREE.MathUtils.clamp(pointerStart.aim+dx/innerWidth*9,-3.1,3.1);
+      aimY=THREE.MathUtils.clamp(pointerStart.elevation-dy/innerHeight*2.2,-1,1);
+      updateAim();
+    }
+    function pointerDown(e){
+      if(role==='shooter' && !flying && shots<5){pointerStart={x:e.clientX,y:e.clientY,aim:aimX,elevation:aimY,mode:'shooter'};renderer.domElement.setPointerCapture?.(e.pointerId);}
+      else if(role==='keeper' && !diveCommitted){pointerStart={x:e.clientX,y:e.clientY,mode:'keeper'};renderer.domElement.setPointerCapture?.(e.pointerId);clearTrace();}
+    }
+    function pointerMove(e){
+      if(!pointerStart)return;
+      if(pointerStart.mode==='shooter' && !flying && shots<5){updateShooterAim(e);}
+      else if(pointerStart.mode==='keeper' && !diveCommitted){
+        const dx=e.clientX-pointerStart.x,dy=e.clientY-pointerStart.y;drawTrace(pointerStart.x,pointerStart.y,e.clientX,e.clientY);
+        diveInputX=THREE.MathUtils.clamp(-dx/110,-1,1);diveInputY=THREE.MathUtils.clamp(-dy/110,-1,1);
+        keeperDiveMode=diveInputY>0.25?'high':diveInputY<-.25?'low':'mid';
+        keeperMarker.material.color.set(keeperDiveMode==='high'?0x53d7ff:keeperDiveMode==='low'?0xffcf45:0xd8e0e4);
+      }
+    }
+    function pointerUp(e){
+      if(pointerStart?.mode==='shooter' && !flying && shots<5){
+        if(e.type==='pointercancel'){pointerStart=null;return;}
+        updateShooterAim(e); pointerStart=null; shoot(); return;
+      }
+      if(pointerStart?.mode==='keeper' && !diveCommitted){
+        const dx=e.clientX-pointerStart.x,dy=e.clientY-pointerStart.y,len=Math.hypot(dx,dy);
+        if(len<24){diveInputX=0;diveInputY=0;keeperDiveMode='mid';clearTrace();}
+        else if(flying){startDive();if(diveCommitted){diveInputX=0;diveInputY=0;keeperDiveMode='mid';clearTrace();}}
+      }
+      pointerStart=null;
+    }
+    renderer.domElement.addEventListener('pointerdown',pointerDown); renderer.domElement.addEventListener('pointermove',pointerMove); renderer.domElement.addEventListener('pointerup',pointerUp); renderer.domElement.addEventListener('pointercancel',pointerUp);
+    document.querySelector('#reset').addEventListener('click',()=>{if(keeperTimer)clearTimeout(keeperTimer);clearTrace();roleSelect.style.display='grid';message.style.display='block';});
+
+    const clock=new THREE.Clock();
+    function animate(){ requestAnimationFrame(animate); const dt=Math.min(clock.getDelta(),0.04);
+      if(playerKickAnimation){
+        const a=playerKickAnimation; a.elapsed+=dt; const p=Math.min(1,a.elapsed/a.duration), eased=p*p*(3-2*p);
+        player.position.x=THREE.MathUtils.lerp(a.fromX,a.toX,eased); player.position.z=THREE.MathUtils.lerp(a.fromZ,a.toZ,eased);
+        player.material.rotation=-0.08*Math.sin(p*Math.PI);
+        if(a.frames){
+          const frameIndex=a.elapsed<0.10?0:a.elapsed<0.19?1:a.elapsed<0.28?2:a.elapsed<0.36?3:4;
+          if(player.material.map!==a.frames[frameIndex]){player.material.map=a.frames[frameIndex];player.material.needsUpdate=true;}
+        }
+        if(role==='shooter' && pendingShotData && a.elapsed>=a.launchAt){shotData=pendingShotData;pendingShotData=null;ball.position.copy(startBall);ball.rotation.set(0,0,0);ball.visible=true;}
+        if(p>=1){player.position.x=a.toX;player.position.z=a.toZ;player.material.rotation=0;if(a.frames && activePlayerIdleTexture){player.material.map=activePlayerIdleTexture;player.material.needsUpdate=true;}playerKickAnimation=null;}
+      }
+      if(flying && shotData){
+        shotData.elapsed+=dt; const v=shotData.velocity; ball.position.x+=v.x*dt; ball.position.z+=v.z*dt; v.y-=shotData.gravity*dt; ball.position.y+=v.y*dt;
+        ball.rotation.x+=dt*7; ball.rotation.z+=dt*5;
+        if(role==='shooter' && shotData.elapsed>shotData.keeperReactAt){
+          const diveProgress=Math.min(1,(shotData.elapsed-shotData.keeperReactAt)/0.34);
+          keeper.position.x+=(shotData.keeperTargetX-keeper.position.x)*Math.min(1,dt*5.5);
+          keeper.position.y=1.6+Math.sin(diveProgress*Math.PI)*0.27;
+          keeper.material.rotation=-Math.sign(shotData.keeperTargetX-keeperHome.x)*0.32;
+        }
+        if(role==='keeper' && shotData.diveAnimation){
+          const a=shotData.diveAnimation, p=Math.min(1,Math.max(0,(shotData.elapsed-a.at)/a.duration)), eased=p*p*(3-2*p);
+          keeper.position.x=THREE.MathUtils.lerp(a.fromX,a.toX,eased); keeper.position.y=THREE.MathUtils.lerp(a.fromY,a.toY,eased);
+          keeper.material.rotation=THREE.MathUtils.lerp(a.fromRotation,a.toRotation,eased); keeperMarker.position.x=keeper.position.x;
+          if(p>=1)clearTrace();
+        }
+        if(ball.position.y<0.36) ball.position.y=0.36;
+        const reached=ball.position.z<=keeper.position.z;
+        if(reached || shotData.elapsed>1.7){
+          const inFrame=Math.abs(ball.position.x)<goalW/2-0.35 && ball.position.y<goalH-0.18 && ball.position.y>0.35;
+          if(role==='shooter'){
+            const saved=Math.abs(ball.position.x-keeper.position.x)<0.78 && ball.position.y<2.28;
+            if(inFrame && !saved){score++;scoreEl.textContent=String(score);show('¡GOOOL!');} else if(saved){show('¡Atajada!');} else {show('¡Afuera!');}
+            flying=false; shotData=null;
+            setTimeout(()=>{if(shots<5){aimX=0;aimY=0;resetBall();updateAim();show('Ajusta la trayectoria y suelta para disparar');}else{show(`Fin del partido · ${score} de 5 goles`);hint.textContent='Pulsa Reiniciar para jugar otra vez';}},1050);
+          } else {
+            const heightMatch=shotData.mode===shotData.diveMode;
+            const saved=inFrame && Math.abs(ball.position.x-keeper.position.x)<0.92 && heightMatch;
+            if(saved){score++;scoreEl.textContent=String(score);show('¡Atajada!');} else if(inFrame){show('¡Gol del rival!');} else {show('¡El tiro se fue afuera!');}
+            flying=false; shotData=null;
+            diveInputX=0; diveInputY=0; diveCommitted=false; keeperDiveMode='mid'; pointerStart=null; clearTrace(); keeperMarker.material.color.set(0xd8e0e4);
+            keeperTimer=setTimeout(()=>{if(shots<5){launchKeeperShot();}else{show(`Fin · ${score} de 5 atajadas`);hint.textContent='Pulsa Reiniciar para elegir otra posición';}},1650);
+          }
+        }
+      }
+      renderer.render(scene,camera);
+    }
+    animate();
+    addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));resizeTrace();});
+  </script>
+</body>
+</html>
