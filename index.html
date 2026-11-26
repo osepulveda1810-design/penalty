@@ -1,456 +1,2128 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <meta name="theme-color" content="#071923" />
-  <title>Penales 3D — prototipo</title>
-  <style>
-    :root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, sans-serif; }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #071923; touch-action: none; }
-    #game { position: fixed; inset: 0; }
-    canvas { display: block; width: 100%; height: 100%; }
-    .hud { position: fixed; z-index: 2; inset: max(12px, env(safe-area-inset-top)) 12px auto; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; }
-    .pill { background: #071923cc; border: 1px solid #ffffff30; border-radius: 14px; padding: 8px 12px; color: white; font-size: 14px; font-weight: 700; backdrop-filter: blur(8px); }
-    #message { position: fixed; z-index: 3; left: 50%; top: 23%; transform: translateX(-50%); background: #071923dd; color: white; border: 1px solid #ffffff40; border-radius: 14px; padding: 10px 16px; font-weight: 700; text-align: center; pointer-events: none; }
-    #hint { position: fixed; z-index: 2; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: max-content; max-width: calc(100% - 28px); text-align: center; color: white; background: #071923c9; border: 1px solid #ffffff30; border-radius: 16px; padding: 10px 14px; font-size: 14px; pointer-events: none; }
-    #reset { position: fixed; z-index: 4; right: 12px; bottom: max(16px, env(safe-area-inset-bottom)); border: 0; border-radius: 14px; padding: 10px 13px; background: #ffffffeb; color: #18212a; font-weight: 800; font-size: 13px; }
-    #role-select { position: fixed; z-index: 10; inset: 0; display: grid; place-items: center; padding: 22px; background: #06141ddd; }
-    #rotate-prompt { display: none; position: fixed; z-index: 20; inset: 0; place-items: center; padding: 28px; background: #071923; color: white; text-align: center; font-size: 20px; font-weight: 800; }
-    #rotate-prompt span { display: block; margin-top: 10px; font-size: 15px; font-weight: 500; color: #bdd0d8; }
-    @media (orientation: landscape) and (max-height: 600px) { #rotate-prompt { display: grid; } }
-    .role-card { width: min(440px,100%); padding: 24px 20px; border: 1px solid #ffffff44; border-radius: 22px; background: #0b2633f2; color: white; text-align: center; box-shadow: 0 18px 55px #0008; }
-    .role-card h2 { margin: 0 0 8px; font-size: 25px; }
-    .role-card p { margin: 0 0 18px; color: #d6e2e8; line-height: 1.45; }
-    .role-card button { display: block; width: 100%; margin-top: 10px; padding: 14px; border: 0; border-radius: 14px; background: #f4c542; color: #18212a; font-size: 16px; font-weight: 900; }
-    .role-card button:last-child { background: #54b4e6; }
-    #character-select { display: none; position: fixed; z-index: 11; inset: 0; place-items: center; overflow-y: auto; padding: 16px; background: #06141df2; }
-    .character-panel { width: min(480px,100%); max-height: 94vh; overflow-y: auto; padding: 20px 16px; border: 1px solid #ffffff44; border-radius: 22px; background: #0b2633f5; color: white; text-align: center; }
-    .character-panel h2 { margin: 6px 0 4px; }
-    .character-panel p { margin: 0 0 14px; color: #d6e2e8; font-size: 13px; line-height: 1.4; }
-    #character-options { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-    .character-option { min-height: 74px; display: flex; align-items: center; gap: 10px; padding: 10px; border: 2px solid #ffffff35; border-radius: 14px; background: #ffffff0c; color: white; text-align: left; font-weight: 750; }
-    .character-option.selected { border-color: #f4c542; background: #f4c54222; }
-    .character-avatar { width: 42px; height: 66px; flex: 0 0 42px; display: grid; place-items: center; overflow: hidden; border-radius: 7px; color: white; font-size: 12px; font-weight: 900; text-shadow: 0 1px 3px #000; }
-    .character-avatar img { display: block; width: 100%; height: 100%; object-fit: contain; }
-    .character-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 13px; }
-    .character-actions button, #custom-upload { border: 0; border-radius: 13px; padding: 12px 9px; background: #ffffffeb; color: #18212a; font-weight: 850; }
-    #start-game { background: #f4c542; }
-    #start-game:disabled { opacity: .45; }
-    #character-label { max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
-    @media (max-height: 650px) { .character-panel { padding: 12px; } .character-option { min-height: 62px; padding: 7px; } }
-    #trace-layer { position: fixed; z-index: 1; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-    #hint.keeper-hint { top: 58px; bottom: auto; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 24px); font-size: 12px; }
-    @media (max-height: 560px) { .hud { inset: 8px 8px auto; } #message { top: 20%; } #hint, #reset { bottom: 8px; } }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Juego de Fútbol — Penales</title>
+<style>
+  :root{
+    --bg:#0c1f14; --panel:#ffffff; --panel-text:#122016;
+    --muted:#5b6b5f; --accent:#e8c832; --red:#d63a2f;
+    --line:#e2e8e2;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --panel:#16241a; --panel-text:#eef5ef; --muted:#9db3a3; --line:#2a3d2f; }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(900px 500px at 20% -10%, #1d4d2e 0, transparent 60%), radial-gradient(800px 400px at 90% 110%, #173d26 0, transparent 55%);
+    color:#f2f7f2; min-height:100vh;
+  }
+  button{min-height:44px; min-width:44px}
+  .wrap{max-width:820px; margin:0 auto; padding:8px 8px 10px; height:100dvh; display:flex; flex-direction:column}
+  /* Scoreboard */
+  .board{display:flex; gap:6px; flex-wrap:nowrap; margin-bottom:6px; align-items:stretch}
+  .board .cell{
+    flex:1 1 86px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14);
+    border-radius:10px; padding:5px 8px; text-align:center;
+  }
+  .cell small{display:block; font-size:10px; letter-spacing:.1em; text-transform:uppercase; opacity:.75; font-weight:700}
+  .cell strong{display:block; font-size:20px; line-height:1.1; font-weight:900; margin-top:1px; font-variant-numeric:tabular-nums}
+  .cell strong.yellow{color:var(--accent)}
+  .cell strong.name{font-size:13.5px; line-height:1.2; padding-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .dots{display:flex; gap:5px; justify-content:center; align-items:center; padding:0 2px; min-height:24px; margin-bottom:6px}
+  .dot{
+    width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,.4);
+    display:inline-flex; align-items:center; justify-content:center; font-size:12px; background:rgba(255,255,255,.06);
+  }
+  .dot.now{border-color:var(--accent); box-shadow:0 0 0 2px rgba(232,200,50,.35)}
+  .dot.gol{background:#1a7a3a; border-color:#3ecf6e}
+  .dot.atajado{background:#8a5a00; border-color:var(--accent)}
+  .dot.fuera{background:#5a1f1a; border-color:var(--red)}
+  .actions{display:flex; gap:6px; flex-wrap:nowrap; margin-bottom:6px}
+  .actions .btn{flex:1; min-height:38px}
+  .btn{
+    border:0; border-radius:999px; padding:0 14px; font-weight:800; font-size:14px; cursor:pointer;
+    background:var(--accent); color:#201a00; display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn.secondary{background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22)}
+  .btn:active{transform:scale(.97)}
+  /* Stage */
+  .stage{
+    position:relative; border-radius:16px; overflow:hidden; background:#1e7a38;
+    border:2px solid rgba(255,255,255,.85); box-shadow:0 18px 40px rgba(0,0,0,.45);
+    flex:1 1 auto; min-height:0; width:100%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  canvas{
+    display:block; touch-action:none; background:#2e9e4f; aspect-ratio: 720 / 900;
+    /* As large as the screen allows without deforming: full stage width,
+       or as wide as the leftover viewport height permits (720/900 =
+       0.8), whichever is smaller. Height follows from the aspect ratio,
+       so players, goal and ball keep their exact proportions — the
+       internal 720x900 geometry is untouched, only the on-screen
+       scale grows. The 236px subtracted is the fixed chrome around the
+       stage (scoreboard, dots, buttons, padding and the fixed-height
+       status line below), so on height-limited screens the canvas fits
+       the stage exactly instead of being clamped by max-height. */
+    width:min(100%, calc((100dvh - 236px) * 0.8));
+    height:auto; max-height:100%;
+  }
+  .overlay{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    text-align:center; padding:22px 18px; background:rgba(6,24,12,.78); overflow-y:auto;
+  }
+  .overlay[hidden]{display:none}
+  .overlay h1{font-size:clamp(28px,7vw,44px); margin:0 0 8px; font-weight:900; letter-spacing:-.02em; line-height:1}
+  .overlay h1 span{color:var(--accent)}
+  .overlay h2{font-size:clamp(22px,5.5vw,32px); margin:0 0 6px; font-weight:900}
+  .overlay p{margin:0 0 16px; max-width:440px; font-size:15px; line-height:1.5; opacity:.92}
+  .overlay .big{font-size:clamp(34px,9vw,58px); font-weight:900; color:var(--accent); line-height:1; margin-bottom:8px}
+  .modeBtns{display:flex; flex-direction:column; gap:12px; width:100%; max-width:340px}
+  .modeBtns .btn{min-height:58px; font-size:18px; border-radius:14px}
+  /* Character picker */
+  .pickGrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(86px,1fr)); gap:10px; width:100%; max-width:460px}
+  .pick{
+    background:rgba(255,255,255,.97); color:#122016; border:3px solid transparent; border-radius:14px;
+    padding:8px 4px 10px; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  .pick img{height:104px; width:auto; max-width:100%; object-fit:contain; pointer-events:none; animation:floaty 2.6s ease-in-out infinite alternate}
+  .pick:nth-child(2) img{animation-delay:.4s}
+  .pick:nth-child(3) img{animation-delay:.8s}
+  .pick:nth-child(4) img{animation-delay:1.2s}
+  .pick:nth-child(5) img{animation-delay:1.6s}
+  @keyframes floaty{from{transform:translateY(2px)}to{transform:translateY(-4px)}}
+  .pick b{font-size:13px; line-height:1.2}
+  .pick small{font-size:11px; color:#5b6b5f; font-weight:700}
+  .pick:active{transform:scale(.97)}
+  .pick:hover{border-color:var(--accent)}
+  /* Result banner */
+  .banner{
+    position:absolute; left:0; right:0; top:16%; display:flex; justify-content:center; pointer-events:none; padding:0 10px;
+  }
+  .banner[hidden]{display:none}
+  .banner span{
+    font-size:clamp(34px,10vw,64px); font-weight:900; color:#fff; text-align:center; line-height:1.02;
+    text-shadow:0 4px 0 rgba(0,0,0,.35), 0 10px 30px rgba(0,0,0,.55); letter-spacing:-.02em; animation:pop .7s ease both;
+  }
+  .banner small{display:block; font-size:clamp(14px,4vw,20px); font-weight:800; color:var(--accent); text-shadow:0 2px 8px rgba(0,0,0,.6); margin-top:6px}
+  @keyframes pop{0%{transform:scale(.6) rotate(-3deg); opacity:0} 25%{transform:scale(1.12) rotate(1.5deg); opacity:1} 100%{transform:scale(1); opacity:1}}
+  @media (prefers-reduced-motion: reduce){ .banner span{animation:none} }
+  /* Fixed height, sized for the longest text (the atajar instructions,
+     4 lines at phone widths). The line changes text at every state
+     change — long instructions while aiming, one short line the moment
+     the shot is fired — and while its height followed the text, the
+     stage above it grew or shrank and the centred canvas jumped with
+     it: in atajar it dropped ~28px the instant the rival shot. With the
+     height reserved, the stage and the canvas stay perfectly still. */
+  .statusLine{text-align:center; font-weight:800; font-size:14px; margin:7px 0 0; line-height:1.45; height:calc(4 * 1.45em)}
+  .statusLine em{font-style:normal; color:var(--accent)}
+  @media (prefers-reduced-motion: reduce){ .pick img{animation:none} }
+</style>
 </head>
 <body>
-  <div id="game"></div>
-  <div class="hud"><div class="pill">⚽ PENAL 3D</div><div class="pill" id="character-label">Elige personaje</div><div class="pill"><span id="score-label">Goles:</span> <span id="score">0</span> / 5</div></div>
-  <div id="message">Ajusta la trayectoria y suelta para disparar</div>
-  <div id="hint">Arrastra hacia los lados y arriba o abajo; suelta para disparar</div>
-  <canvas id="trace-layer" aria-hidden="true"></canvas>
-  <button id="reset">Reiniciar</button>
-  <div id="role-select"><div class="role-card"><h2>Penales 3D</h2><p>Primero elige cómo quieres jugar.</p><button id="play-shooter">QUIERO PATEAR</button><button id="play-keeper">QUIERO ATAJAR</button></div></div>
-  <div id="character-select"><div class="character-panel"><h2 id="character-title">Elige tu personaje</h2><p id="character-note">Elige uno de los cinco personajes disponibles para esta posición.</p><div id="character-options"></div><div class="character-actions"><button id="cancel-character" type="button">Volver</button><button id="start-game" type="button" disabled>Empezar</button></div></div></div>
-  <div id="rotate-prompt">Este juego está diseñado para jugarse en vertical.<span>Gira el teléfono para continuar.</span></div>
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+<div class="wrap">
 
-    const mount = document.querySelector('#game');
-    const scoreEl = document.querySelector('#score');
-    const message = document.querySelector('#message');
-    const hint = document.querySelector('#hint');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x85c9ec);
-    scene.fog = new THREE.Fog(0x85c9ec, 24, 60);
-    const camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 100);
-    camera.position.set(0, 5.2, 14.8);
-    camera.lookAt(0, 2.3, -8);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.7));
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
-    mount.appendChild(renderer.domElement);
+  <div class="board" aria-label="Marcador de la tanda">
+    <div class="cell"><small>⚽ Tiro</small><strong id="roundLbl">– / 5</strong></div>
+    <div class="cell"><small id="scoreLbl">Goles</small><strong id="score" class="yellow">0</strong></div>
+    <div class="cell" style="flex:1.4 1 120px"><small>🧤 Rival</small><strong class="name" id="rivalLbl">—</strong></div>
+  </div>
+  <div class="dots" id="dots" aria-label="Resultados de los tiros"></div>
 
-    scene.add(new THREE.HemisphereLight(0xe7f8ff, 0x38623e, 2.0));
-    const sun = new THREE.DirectionalLight(0xfff1d2, 2.4);
-    sun.position.set(-5, 12, 7); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); scene.add(sun);
+  <div class="actions">
+    <button class="btn secondary" id="changeBtn">👕 Cambiar personaje</button>
+    <button class="btn secondary" id="restartBtn">↻ Reiniciar tanda</button>
+  </div>
 
-    // Cancha procedural: franjas de césped y líneas pintadas.
-    const grass = new THREE.Group(); scene.add(grass);
-    const base = new THREE.Mesh(new THREE.PlaneGeometry(48, 60), new THREE.MeshStandardMaterial({ color: 0x236b3e, roughness: 1 }));
-    base.rotation.x = -Math.PI / 2; base.position.set(0, -0.03, -8); base.receiveShadow = true; scene.add(base);
-    for (let i = 0; i < 10; i++) {
-      const stripe = new THREE.Mesh(new THREE.PlaneGeometry(48, 6), new THREE.MeshStandardMaterial({ color: i % 2 ? 0x2c7a46 : 0x34884c, roughness: 1 }));
-      stripe.rotation.x = -Math.PI / 2; stripe.position.set(0, 0.001, -34 + i * 6); stripe.receiveShadow = true; grass.add(stripe);
-    }
-    const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    function line(x, z, w, d) { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), lineMat); m.rotation.x = -Math.PI/2; m.position.set(x, 0.013, z); scene.add(m); }
-    line(0, -3.1, 20, 0.09); line(-9.95, -7, 0.09, 8); line(9.95, -7, 0.09, 8); line(0, -10.95, 20, 0.09);
-    line(-3.65, -14.2, 0.07, 6.5); line(3.65, -14.2, 0.07, 6.5); line(0, -17.45, 7.3, 0.07);
-    const spot = new THREE.Mesh(new THREE.CircleGeometry(0.09, 24), lineMat); spot.rotation.x=-Math.PI/2; spot.position.set(0,0.02,0.4); scene.add(spot);
+  <div class="stage">
+    <canvas id="game" width="720" height="900" aria-label="Cancha de penales"></canvas>
 
-    // Tribunas sencillas para dar profundidad al entorno.
-    const standMat = new THREE.MeshStandardMaterial({ color: 0x314957, roughness: 0.9 });
-    for (const side of [-1, 1]) {
-      const stand = new THREE.Mesh(new THREE.BoxGeometry(5.5, 4, 30), standMat); stand.position.set(side * 13, 2, -12); scene.add(stand);
-      for (let row = 0; row < 5; row++) {
-        const seat = new THREE.Mesh(new THREE.BoxGeometry(5.7, 0.18, 30), new THREE.MeshStandardMaterial({ color: row % 2 ? 0x406779 : 0x3c5b69 }));
-        seat.position.set(side * 13, 0.45 + row * 0.65, -12); scene.add(seat);
+    <div class="banner" id="banner" hidden><span id="bannerTxt"></span></div>
+
+    <div class="overlay" id="modeOverlay">
+      <h1>Penales<br><span>¡Tanda de 5 tiros!</span></h1>
+      <p>Elige cómo quieres jugar: patea o ataja. Define la tanda en 5 penales.</p>
+      <div class="modeBtns">
+        <button class="btn" id="modeKick">⚽ QUIERO PATEAR</button>
+        <button class="btn" id="modeKeep" style="background:#fff; color:#122016">🧤 QUIERO ATAJAR</button>
+      </div>
+      <p style="margin-top:14px; font-size:13px; opacity:.8">Elige tu personaje y después a tu rival.</p>
+    </div>
+
+    <div class="overlay" id="pickOverlay" hidden>
+      <h2 id="pickTitle">Elige tu personaje</h2>
+      <p id="pickSub">Elige uno de los cinco disponibles para esta posición.</p>
+      <div class="pickGrid" id="pickGrid"></div>
+      <button class="btn secondary" id="backBtn" style="margin-top:16px">← Volver</button>
+    </div>
+
+    <div class="overlay" id="endOverlay" hidden>
+      <div class="big" id="finalScore">0 / 5</div>
+      <h2 id="finalTitle">¡Terminó la tanda!</h2>
+      <p id="finalMsg">Buena tanda.</p>
+      <div class="modeBtns">
+        <button class="btn" id="againBtn">↻ Revancha con el mismo personaje</button>
+        <button class="btn secondary" id="againPickBtn">👕 Cambiar personaje</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="statusLine" id="statusLine">Elige cómo quieres jugar para empezar.</p>
+
+</div>
+
+<script>
+(function(){
+  var canvas = document.getElementById('game');
+  var ctx = canvas.getContext('2d');
+  var W = 720, H = 900;
+
+  // ---------- Data: Oscar's characters, one clean sprite each (front + back) ----------
+  var SHOOTERS = [
+    {id:'ronaldo', name:'Cristiano Ronaldo', num:7,  kit:'Camiseta roja · 7'},
+    {id:'mbappe',  name:'Kylian Mbappé',     num:10, kit:'Camiseta azul oscura · 10'},
+    {id:'messi',   name:'Lionel Messi',      num:10, kit:'Celeste y blanca · 10'},
+    {id:'neymar',  name:'Neymar Jr',         num:10, kit:'Camiseta amarilla · 10'},
+    {id:'joaquin', name:'Joaquín',           num:7,  kit:'Camiseta roja · 7'}
+  ];
+  var KEEPERS = [
+    {id:'martinez',   name:'Emiliano Martínez',   num:1,  kit:'Camiseta azul · 1'},
+    {id:'courtois',   name:'Thibaut Courtois',    num:1,  kit:'Camiseta verde oscuro · 1'},
+    {id:'alisson',    name:'Alisson Becker',      num:1,  kit:'Camiseta amarilla · 1'},
+    {id:'donnarumma', name:'Gianluigi Donnarumma', num:23, kit:'Camiseta verde azulada · 23'},
+    {id:'casillas',   name:'Iker Casillas',       num:1,  kit:'Camiseta verde · 1'}
+  ];
+  var imgs = {};
+  function loadImg(key, src){
+    var im = new Image();
+    im.src = src;
+    imgs[key] = im;
+  }
+  SHOOTERS.concat(KEEPERS).forEach(function(p){
+    // Martínez's, Courtois's, Alisson's, Donnarumma's and Casillas's
+    // fronts are their chroma stands (loadChroma below), keyed in code
+    // under this same key — they no longer load their old front sprites.
+    if(p.id !== 'martinez' && p.id !== 'courtois' && p.id !== 'alisson' && p.id !== 'donnarumma' && p.id !== 'casillas') loadImg(p.id+'-front', 'assets/'+p.id+'-front.png');
+    // The five shooters' back views are their chroma stands (loadChroma
+    // below), keyed in code — they no longer load a hand-cut back sprite.
+    // Only the keepers still load theirs.
+    if(p.id !== 'ronaldo' && p.id !== 'messi' && p.id !== 'neymar' && p.id !== 'mbappe' && p.id !== 'joaquin') loadImg(p.id+'-back', 'assets/'+p.id+'-back.png');
+  });
+
+  // ---------- Chroma key: the five shooters' sprites arrive on pure green ----------
+  // Their four back-view poses (stand, run A, run B, kick) were generated on a
+  // flat #00FF00 background and are keyed HERE, in code, the moment each one
+  // loads — no hand cut-out anywhere. The key is green DOMINANCE, g − max(r,b):
+  // the chroma measures ≈248 while the kits' own greens (the numbers, the
+  // trim, the stripes, the boot soles) stay far below it, so a feathered
+  // band between dominance 110 (fully kept) and 215 (fully erased) removes
+  // ONLY the bright chroma and softens the silhouette edge. Dark pixels
+  // (g < 150) are never keyed at all. Semi-keyed fringe pixels also get their
+  // green pulled back toward the other channels (despill), so no neon halo
+  // survives around the figure. The keyed result is trimmed to the character
+  // and capped at the same 1000px working size as every other sprite, so it
+  // enters the game at exactly the same scale as the transparent sprites.
+  function loadChroma(key, src){
+    var raw = new Image();
+    raw.onload = function(){
+      var w = raw.naturalWidth, h = raw.naturalHeight;
+      if(!w || !h) return;
+      var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      var g2 = cv.getContext('2d');
+      g2.drawImage(raw, 0, 0);
+      var id = g2.getImageData(0, 0, w, h), d = id.data;
+      var minX = w, minY = h, maxX = -1, maxY = -1;
+      for(var i = 0; i < d.length; i += 4){
+        var r = d[i], gg = d[i+1], b = d[i+2];
+        var mx = Math.max(r, b);
+        var a = 1;
+        if(gg >= 150){
+          a = (215 - (gg - mx)) / 105;
+          if(a < 0) a = 0; else if(a > 1) a = 1;
+        }
+        if(a < 1){
+          d[i+3] = Math.round(255 * a);
+          if(a > 0) d[i+1] = Math.round(gg - (gg - mx) * (1 - a)); // despill
+        }
+        if(a > 0.5){
+          var n = i >> 2, px = n % w, py = (n - px) / w;
+          if(px < minX) minX = px; if(px > maxX) maxX = px;
+          if(py < minY) minY = py; if(py > maxY) maxY = py;
+        }
       }
-    }
-
-    // Arco y red.
-    const goalZ = -19.8, goalW = 7.32, goalH = 2.45;
-    const KEEPER_Z = goalZ + 1.25; // Delante de la línea del arco, hacia el punto penal.
-    const postMat = new THREE.MeshStandardMaterial({ color: 0xf4f5ef, metalness: 0.15, roughness: 0.28 });
-    function bar(x,y,z,w,h,d) { const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), postMat); m.position.set(x,y,z); m.castShadow=true; scene.add(m); return m; }
-    bar(-goalW/2, goalH/2, goalZ, 0.16, goalH, 0.16); bar(goalW/2, goalH/2, goalZ, 0.16, goalH, 0.16); bar(0, goalH, goalZ, goalW+0.15, 0.16, 0.16);
-    const net = new THREE.Mesh(new THREE.PlaneGeometry(goalW, goalH), new THREE.MeshBasicMaterial({ color: 0xd9e4df, transparent: true, opacity: 0.19, side: THREE.DoubleSide, wireframe: true }));
-    net.position.set(0, goalH/2, goalZ + 0.9); scene.add(net);
-    for (const x of [-goalW/2,goalW/2]) { const back = bar(x,1.15,goalZ+0.45,0.12,2.3,0.9); }
-    bar(0,0.06,goalZ+0.45,goalW,0.12,0.9);
-
-    // Sprites de personajes dibujados como placeholders: luego se cambian por renders frontal/perfil/trasera.
-    function makeSprite(kind, shirtColor) {
-      const c = document.createElement('canvas'); c.width = 128; c.height = 256;
-      const g = c.getContext('2d');
-      // sombra suave
-      g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(64,244,31,7,0,0,Math.PI*2); g.fill();
-      // piernas
-      g.fillStyle = '#202a38'; g.fillRect(43,151,18,78); g.fillRect(68,151,18,78);
-      g.fillStyle = '#f1f1eb'; g.fillRect(39,224,25,12); g.fillRect(65,224,26,12);
-      // brazos y cuerpo
-      g.fillStyle = shirtColor; g.beginPath(); g.roundRect(31,72,66,91,16); g.fill();
-      g.fillStyle = '#f2bd91'; g.fillRect(23,83,14,64); g.fillRect(91,83,14,64);
-      // cuello y cabeza
-      g.fillStyle = '#e8af80'; g.fillRect(54,59,21,22); g.beginPath(); g.ellipse(64,39,25,30,0,0,Math.PI*2); g.fill();
-      g.fillStyle = '#34251f'; g.beginPath(); g.ellipse(64,24,26,17,0,Math.PI,Math.PI*2); g.fill();
-      if (kind === 'keeper') { g.fillStyle='#fff'; g.beginPath(); g.arc(46,40,3,0,Math.PI*2);g.arc(81,40,3,0,Math.PI*2);g.fill(); g.fillStyle='#222';g.fillRect(36,98,55,8); }
-      else { g.fillStyle='#fff'; g.beginPath(); g.arc(55,41,2.5,0,Math.PI*2);g.arc(73,41,2.5,0,Math.PI*2);g.fill(); }
-      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter;
-      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
-      return new THREE.Sprite(mat);
-    }
-    const keeper = makeSprite('keeper', '#e64c3c'); keeper.position.set(0,1.6,KEEPER_Z); keeper.scale.set(1.45,2.9,1); scene.add(keeper);
-    let keeperFrontTexture=keeper.material.map;
-    const defaultKeeperFrontTexture=keeper.material.map;
-    function makeKeeperBackTexture(shirtColor='#e64c3c'){
-      const c=document.createElement('canvas');c.width=128;c.height=256;const g=c.getContext('2d');
-      g.fillStyle='rgba(0,0,0,.2)';g.beginPath();g.ellipse(64,244,31,7,0,0,Math.PI*2);g.fill();
-      g.fillStyle='#202a38';g.fillRect(42,151,19,77);g.fillRect(68,151,19,77);
-      g.fillStyle='#eeeeea';g.fillRect(38,224,27,12);g.fillRect(64,224,27,12);
-      g.fillStyle=shirtColor;g.beginPath();g.roundRect(31,72,66,91,16);g.fill();
-      g.fillRect(23,83,14,64);g.fillRect(91,83,14,64);
-      g.fillStyle='#e8af80';g.fillRect(54,59,21,22);g.beginPath();g.ellipse(64,39,25,30,0,0,Math.PI*2);g.fill();
-      g.fillStyle='#34251f';g.beginPath();g.ellipse(64,24,26,17,0,Math.PI,Math.PI*2);g.fill();g.fillRect(39,24,50,18);
-      g.fillStyle='#fff';g.font='bold 42px system-ui';g.textAlign='center';g.fillText('1',64,132);
-      const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t;
-    }
-    let keeperBackTexture=makeKeeperBackTexture();
-    const defaultKeeperBackTexture=keeperBackTexture;
-    const player = makeSprite('player', '#2374d8'); player.position.set(0,1.55,4.7); player.scale.set(1.15,2.3,1); scene.add(player);
-    const defaultPlayerTexture=player.material.map;
-
-    // Balón de fútbol con patrón sencillo.
-    const ball = new THREE.Group(); scene.add(ball);
-    const ballMesh = new THREE.Mesh(new THREE.SphereGeometry(0.36, 24, 18), new THREE.MeshStandardMaterial({ color: 0xf5f4ed, roughness: 0.56 })); ballMesh.castShadow=true; ball.add(ballMesh);
-    const patchMat = new THREE.MeshStandardMaterial({ color: 0x20252b, roughness: 0.8 });
-    for(let i=0;i<5;i++){ const p=new THREE.Mesh(new THREE.SphereGeometry(0.115,8,6),patchMat); const a=i*Math.PI*2/5; p.position.set(Math.cos(a)*0.28,Math.sin(a)*0.12,Math.sin(a)*0.28); ball.add(p); }
-    const startBall = new THREE.Vector3(0,0.37,0.4); ball.position.copy(startBall);
-    const SHOT_SPEED=26;
-    const KEEPER_SHOT_SPEED=21;
-
-    let score=0, shots=0, flying=false, shotData=null, pendingShotData=null, pointerStart=null, aimX=0, aimY=0, role='shooter', keeperDiveMode='mid', keeperTimer=null, keeperHome=keeper.position.clone(), diveInputX=0, diveInputY=0, diveCommitted=false, playerKickAnimation=null;
-    const trajectoryPreview = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xffd43b, transparent: true, opacity: 0.92 }));
-    trajectoryPreview.frustumCulled=false; trajectoryPreview.renderOrder=2; scene.add(trajectoryPreview);
-    const aimArrow = new THREE.ArrowHelper(new THREE.Vector3(0,0,-1), new THREE.Vector3(0,0.12,0.4), 0.7, 0xffd43b, 0.25, 0.16);
-    aimArrow.line.material.transparent=true; aimArrow.line.material.opacity=0.9; scene.add(aimArrow);
-    const keeperMarker=new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.42,0.12,20),new THREE.MeshStandardMaterial({color:0xffd43b,emissive:0x614600}));
-    keeperMarker.position.set(0,0.08,goalZ+0.55); keeperMarker.visible=false; scene.add(keeperMarker);
-    const roleSelect=document.querySelector('#role-select'), scoreLabel=document.querySelector('#score-label');
-    const characterSelect=document.querySelector('#character-select'), characterOptionsEl=document.querySelector('#character-options');
-    const characterTitle=document.querySelector('#character-title'), characterLabel=document.querySelector('#character-label');
-    const startGameButton=document.querySelector('#start-game');
-    const characterChoices={
-      shooter:[
-        {id:'cr7',name:'Cristiano Ronaldo',short:'CR7',color:'#b32635'},
-        {id:'mbappe',name:'Kylian Mbappé',short:'KM',color:'#263b78'},
-        {id:'messi',name:'Lionel Messi',short:'LM',color:'#3398d4'},
-        {id:'neymar',name:'Neymar Jr.',short:'NJ',color:'#e3c329'},
-        {id:'joaquin',name:'Joaquín Sepúlveda',short:'JS',color:'#b32635'}
-      ],
-      keeper:[
-        {id:'dibu',name:'Emiliano Martínez',short:'EM',color:'#23945b'},
-        {id:'courtois',name:'Thibaut Courtois',short:'TC',color:'#145a32'},
-        {id:'alisson',name:'Alisson Becker',short:'AB',color:'#e0b72e'},
-        {id:'donnarumma',name:'Gianluigi Donnarumma',short:'GD',color:'#2875bd'},
-        {id:'iker',name:'Iker Casillas',short:'IC',color:'#23945b'}
-      ]
+      if(maxX < 0) return;
+      g2.putImageData(id, 0, 0);
+      var tw = maxX - minX + 1, th = maxY - minY + 1;
+      var sc = Math.min(1, 1000 / Math.max(tw, th));
+      var out = document.createElement('canvas');
+      out.width = Math.round(tw * sc); out.height = Math.round(th * sc);
+      out.getContext('2d').drawImage(cv, minX, minY, tw, th, 0, 0, out.width, out.height);
+      imgs[key] = out; // a canvas — the draw helpers read width/height either way
     };
-    const spriteTextureOrder=['cr7_front','cr7_back','mbappe_front','mbappe_back','messi_front','messi_back','neymar_front','neymar_back','joaquin_front','joaquin_back','dibu_front','dibu_back','courtois_front','courtois_back','alisson_front','alisson_back','donnarumma_front','donnarumma_back','iker_front','iker_back'];
-    const spriteTextures=Object.create(null);
-    const cr7KickFrames=[];
-    let activePlayerKickFrames=null, activePlayerIdleTexture=null;
-    let spriteAssetsReady=false, pendingRole='shooter', selectedCharacter=null;
-    function canStartSelectedCharacter(){return !!selectedCharacter && spriteAssetsReady && (selectedCharacter.id!=='cr7' || cr7KickFrames.length===5);}
-    const traceLayer=document.querySelector('#trace-layer'), traceCtx=traceLayer.getContext('2d');
-    const spriteAtlasImage=new Image();
-    spriteAtlasImage.onload=()=>{
-      const cellW=80,cellH=160,columns=4;
-      spriteTextureOrder.forEach((key,index)=>{
-        const canvas=document.createElement('canvas'); canvas.width=cellW; canvas.height=cellH;
-        canvas.getContext('2d').drawImage(spriteAtlasImage,(index%columns)*cellW,Math.floor(index/columns)*cellH,cellW,cellH,0,0,cellW,cellH);
-        const texture=new THREE.CanvasTexture(canvas); texture.colorSpace=THREE.SRGBColorSpace; texture.magFilter=THREE.LinearFilter; texture.minFilter=THREE.LinearMipmapLinearFilter;
-        spriteTextures[key]=texture;
-      });
-      spriteAssetsReady=true; if(selectedCharacter)startGameButton.disabled=!canStartSelectedCharacter();
-      renderCharacterOptions();
-    };
-    spriteAtlasImage.onerror=()=>{spriteAssetsReady=true;if(selectedCharacter)startGameButton.disabled=!canStartSelectedCharacter();};
-    spriteAtlasImage.src='assets/personajes.webp';
-    const cr7KickSheetImage=new Image();
-    cr7KickSheetImage.onload=()=>{
-      const frames=5,cellW=cr7KickSheetImage.naturalWidth/frames,cellH=cr7KickSheetImage.naturalHeight;
-      for(let i=0;i<frames;i++){
-        const cell=document.createElement('canvas');cell.width=Math.ceil(cellW);cell.height=cellH;
-        const cellCtx=cell.getContext('2d');cellCtx.drawImage(cr7KickSheetImage,i*cellW,0,cellW,cellH,0,0,cell.width,cell.height);
-        const pixels=cellCtx.getImageData(0,0,cell.width,cell.height).data;let minX=cell.width,minY=cell.height,maxX=-1,maxY=-1;
-        for(let y=0;y<cell.height;y++)for(let x=0;x<cell.width;x++)if(pixels[(y*cell.width+x)*4+3]>16){if(x<minX)minX=x;if(y<minY)minY=y;if(x>maxX)maxX=x;if(y>maxY)maxY=y;}
-        const canvas=document.createElement('canvas');canvas.width=128;canvas.height=256;
-        if(maxX>=minX&&maxY>=minY){
-          const cropW=maxX-minX+1,cropH=maxY-minY+1,scale=Math.min(116/cropW,244/cropH),drawW=cropW*scale,drawH=cropH*scale;
-          canvas.getContext('2d').drawImage(cell,minX,minY,cropW,cropH,(128-drawW)/2,252-drawH,drawW,drawH);
-        }
-        const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;cr7KickFrames.push(texture);
-      }
-      if(selectedCharacter)startGameButton.disabled=!canStartSelectedCharacter();
-    };
-    cr7KickSheetImage.src='assets/cr7-kick.webp';
-    function renderCharacterOptions(){
-      characterOptionsEl.replaceChildren();
-      for(const character of characterChoices[pendingRole]){
-        const button=document.createElement('button'); button.type='button';
-        button.className='character-option'+(selectedCharacter===character?' selected':'');
-        const avatar=document.createElement('span'); avatar.className='character-avatar'; avatar.style.background=character.color;
-        const texture=spriteTextures[`${character.id}_front`];
-        if(texture?.image){const img=document.createElement('img');img.alt='';img.src=texture.image.toDataURL('image/png');avatar.appendChild(img);}else avatar.textContent=character.short;
-        const name=document.createElement('span'); name.textContent=character.name;
-        button.append(avatar,name);
-        button.addEventListener('click',()=>{selectedCharacter=character;startGameButton.disabled=!canStartSelectedCharacter();renderCharacterOptions();});
-        characterOptionsEl.appendChild(button);
-      }
-    }
-    function openCharacterSelect(nextRole){
-      pendingRole=nextRole; selectedCharacter=null; startGameButton.disabled=true;
-      characterTitle.textContent=nextRole==='shooter'?'Elige tu jugador':'Elige tu arquero';
-      renderCharacterOptions(); roleSelect.style.display='none'; characterSelect.style.display='grid';
-    }
-    function startSelectedGame(){
-      if(!canStartSelectedCharacter()) return;
-      const front=spriteTextures[`${selectedCharacter.id}_front`];
-      const back=spriteTextures[`${selectedCharacter.id}_back`];
-      if(pendingRole==='shooter'){
-        activePlayerKickFrames=selectedCharacter.id==='cr7' && cr7KickFrames.length===5 ? cr7KickFrames : null;
-        activePlayerIdleTexture=activePlayerKickFrames?.[0] || back || front || defaultPlayerTexture;
-        player.material.map=activePlayerIdleTexture; player.material.needsUpdate=true;
-        keeperFrontTexture=defaultKeeperFrontTexture; keeperBackTexture=defaultKeeperBackTexture;
-      }else{
-        activePlayerKickFrames=null; activePlayerIdleTexture=defaultPlayerTexture;
-        player.material.map=defaultPlayerTexture; player.material.needsUpdate=true;
-        keeperFrontTexture=front || defaultKeeperFrontTexture; keeperBackTexture=back || front || defaultKeeperBackTexture;
-      }
-      keeper.material.needsUpdate=true;
-      characterLabel.textContent=(pendingRole==='shooter'?'Jugador: ':'Arquero: ')+selectedCharacter.name;
-      characterSelect.style.display='none'; selectRole(pendingRole);
-    }
-    document.querySelector('#play-shooter').addEventListener('click',()=>openCharacterSelect('shooter'));
-    document.querySelector('#play-keeper').addEventListener('click',()=>openCharacterSelect('keeper'));
-    document.querySelector('#cancel-character').addEventListener('click',()=>{characterSelect.style.display='none';roleSelect.style.display='grid';});
-    startGameButton.addEventListener('click',startSelectedGame);
-    function getAimShot(){
-      const flightTime=(KEEPER_Z-startBall.z)/-SHOT_SPEED;
-      return {flightTime,velocityY:2.2+(aimY+1)*2.1,gravity:10.5};
-    }
-    function updateAim(){
-      const {flightTime,velocityY,gravity}=getAimShot();
-      const velocityX=aimX/flightTime, points=[];
-      const steps=28;
-      for(let i=0;i<=steps;i++){
-        const t=flightTime*i/steps;
-        const y=Math.max(0.36,startBall.y+velocityY*t-0.5*gravity*t*t);
-        points.push(new THREE.Vector3(velocityX*t,y,startBall.z-SHOT_SPEED*t));
-      }
-      trajectoryPreview.geometry.dispose();
-      trajectoryPreview.geometry=new THREE.BufferGeometry().setFromPoints(points);
-      const tip=points[points.length-1];
-      const tangent=new THREE.Vector3(velocityX,velocityY-gravity*flightTime,-SHOT_SPEED).normalize();
-      aimArrow.position.copy(tip); aimArrow.setDirection(tangent); aimArrow.setLength(0.7,0.25,0.16);
-      camera.lookAt(aimX*0.55,2.3+aimY*0.2,-8);
-    }
-    function show(text){ message.textContent=text; message.style.display='block'; }
-    function hideMessage(){ message.style.display='none'; }
-    function resizeTrace(){const dpr=Math.min(devicePixelRatio,2);traceLayer.width=innerWidth*dpr;traceLayer.height=innerHeight*dpr;traceCtx.setTransform(dpr,0,0,dpr,0,0);traceCtx.clearRect(0,0,innerWidth,innerHeight);}
-    function clearTrace(){traceCtx.clearRect(0,0,innerWidth,innerHeight);}
-    function drawTrace(x1,y1,x2,y2){
-      clearTrace();const angle=Math.atan2(y2-y1,x2-x1),head=18;
-      traceCtx.save();traceCtx.lineWidth=7;traceCtx.lineCap='round';traceCtx.strokeStyle='#ffe05b';traceCtx.shadowColor='#0009';traceCtx.shadowBlur=8;
-      traceCtx.beginPath();traceCtx.moveTo(x1,y1);traceCtx.lineTo(x2,y2);traceCtx.stroke();traceCtx.beginPath();traceCtx.moveTo(x2,y2);traceCtx.lineTo(x2-head*Math.cos(angle-.55),y2-head*Math.sin(angle-.55));traceCtx.lineTo(x2-head*Math.cos(angle+.55),y2-head*Math.sin(angle+.55));traceCtx.closePath();traceCtx.fillStyle='#ffe05b';traceCtx.fill();traceCtx.restore();
-    }
-    resizeTrace();
-    function resetBall(){ ball.position.copy(startBall); ball.rotation.set(0,0,0); flying=false; shotData=null; pendingShotData=null; if(role==='shooter')keeper.position.copy(keeperHome);else keeper.position.set(0,1.1,KEEPER_Z); keeper.material.rotation=0; player.position.set(0,1.55,6.2); player.material.rotation=0; playerKickAnimation=null; if(activePlayerIdleTexture){player.material.map=activePlayerIdleTexture;player.material.needsUpdate=true;} keeperMarker.position.x=keeper.position.x; }
-    function startPlayerKick(){
-      player.position.set(0,1.55,6.2); player.material.rotation=0;
-      if(role==='shooter' && activePlayerKickFrames){player.material.map=activePlayerKickFrames[0];player.material.needsUpdate=true;}
-      playerKickAnimation={elapsed:0,duration:0.46,launchAt:0.36,frames:role==='shooter'?activePlayerKickFrames:null,fromX:0,toX:-0.22,fromZ:6.2,toZ:2.45};
-    }
-    function startDive(){
-      if(role!=='keeper' || !flying || !shotData || diveCommitted || Math.hypot(diveInputX,diveInputY)<0.22) return;
-      diveCommitted=true;
-      shotData.diveMode=keeperDiveMode;
-      shotData.diveAnimation={at:shotData.elapsed,duration:0.34,fromX:keeper.position.x,fromY:keeper.position.y,fromRotation:keeper.material.rotation,toX:diveInputX*2.75,toY:THREE.MathUtils.clamp(1.1+diveInputY*0.72,0.35,1.82),toRotation:diveInputX*0.65};
-    }
-    function launchKeeperShot(){
-      if(role!=='keeper' || shots>=5) return;
-      ball.position.copy(startBall); ball.rotation.set(0,0,0); ball.visible=true;
-      keeper.position.set(0,1.1,KEEPER_Z); keeper.material.rotation=0; keeperMarker.position.x=0;
-      player.position.set(0,1.55,6.2); player.material.rotation=0; playerKickAnimation=null;
-      show('Prepárate: viene el tiro'); hint.textContent=`Tiro ${shots+1} de 5 · prepárate para atajar`;
-      keeperTimer=setTimeout(()=>{
-        if(role!=='keeper' || shots>=5) return;
-        startPlayerKick();
-        const targetX=(Math.random()-0.5)*5.6, mode=Math.random()<0.55?'low':'high';
-        const flightTime=(KEEPER_Z-startBall.z)/-KEEPER_SHOT_SPEED;
-        shotData={velocity:new THREE.Vector3(targetX/flightTime,mode==='high'?6.4:2.0,-KEEPER_SHOT_SPEED),gravity:mode==='high'?10.5:4.0,elapsed:0,targetX,mode};
-        shots++; flying=true; diveCommitted=false; hideMessage(); hint.textContent=`Tiro ${shots} de 5 · traza hacia dónde lanzarte`;
-        startDive();
-        if(diveCommitted){diveInputX=0;diveInputY=0;keeperDiveMode='mid';pointerStart=null;clearTrace();}
-      },650);
-    }
-    function selectRole(nextRole){
-      try { const lock=screen.orientation?.lock?.('portrait'); if(lock?.catch) lock.catch(()=>{}); } catch {}
-      role=nextRole; score=0; shots=0; aimX=0; aimY=0; keeperDiveMode='mid'; diveInputX=0; diveInputY=0; diveCommitted=false; playerKickAnimation=null; clearTrace(); resetBall();
-      scoreEl.textContent='0'; roleSelect.style.display='none';
-      if(keeperTimer) clearTimeout(keeperTimer);
-      if(role==='shooter'){
-        camera.position.set(0,5.2,14.8); keeper.visible=true; keeper.material.map=keeperFrontTexture; keeper.material.needsUpdate=true; keeper.scale.set(1.45,2.9,1); player.visible=true; aimArrow.visible=true; trajectoryPreview.visible=true; keeperMarker.visible=false;
-        hint.classList.remove('keeper-hint'); clearTrace();
-        scoreLabel.textContent='Goles:';
-        hint.textContent='Arrastra la flecha a los lados y en vertical; suelta para disparar'; updateAim(); show('Ajusta la trayectoria y suelta para disparar');
-      } else {
-        // Cámara detrás del arco; el arquero queda adelantado a la línea, hacia el punto penal.
-        // Encuadre vertical, alejado y levemente elevado para seguir el balón y la atajada.
-        camera.position.set(0,3.35,goalZ-12.0); camera.lookAt(0,1.55,0.5); keeper.visible=true; keeper.material.map=keeperBackTexture; keeper.material.needsUpdate=true; keeper.scale.set(1.0,2.0,1); player.visible=true; aimArrow.visible=false; trajectoryPreview.visible=false; keeperMarker.visible=true;
-        keeper.position.set(0,1.1,KEEPER_Z); keeperMarker.position.x=0;
-        hint.classList.add('keeper-hint'); clearTrace();
-        scoreLabel.textContent='Atajadas:'; hint.textContent='Desliza hacia donde quieres que se lance el arquero'; show('Traza la dirección de la atajada');
-        keeperTimer=setTimeout(launchKeeperShot,1700);
-      }
-    }
-    function shoot(){
-      if(role!=='shooter' || flying || shots>=5) return;
-      const {flightTime,velocityY,gravity}=getAimShot();
-      const mode=aimY>0.12?'high':'low';
-      const nextShotData={velocity:new THREE.Vector3(aimX/flightTime,velocityY,-SHOT_SPEED),gravity,elapsed:0,targetX:aimX,mode};
-      const predictsSide=Math.random()<0.38;
-      const dive=predictsSide?aimX+(Math.random()-0.5)*0.8:(Math.random()-0.5)*4.8;
-      nextShotData.keeperTargetX=THREE.MathUtils.clamp(dive,-2.45,2.45); nextShotData.keeperReactAt=0.16;
-      pendingShotData=nextShotData; shotData=null;
-      startPlayerKick(); flying=true; shots++; hideMessage(); hint.textContent=`Tiros: ${shots} de 5`;
-      keeper.material.rotation=0;
-    }
-    function updateShooterAim(e){
-      const dx=e.clientX-pointerStart.x,dy=e.clientY-pointerStart.y;
-      aimX=THREE.MathUtils.clamp(pointerStart.aim+dx/innerWidth*9,-3.1,3.1);
-      aimY=THREE.MathUtils.clamp(pointerStart.elevation-dy/innerHeight*2.2,-1,1);
-      updateAim();
-    }
-    function pointerDown(e){
-      if(role==='shooter' && !flying && shots<5){pointerStart={x:e.clientX,y:e.clientY,aim:aimX,elevation:aimY,mode:'shooter'};renderer.domElement.setPointerCapture?.(e.pointerId);}
-      else if(role==='keeper' && !diveCommitted){pointerStart={x:e.clientX,y:e.clientY,mode:'keeper'};renderer.domElement.setPointerCapture?.(e.pointerId);clearTrace();}
-    }
-    function pointerMove(e){
-      if(!pointerStart)return;
-      if(pointerStart.mode==='shooter' && !flying && shots<5){updateShooterAim(e);}
-      else if(pointerStart.mode==='keeper' && !diveCommitted){
-        const dx=e.clientX-pointerStart.x,dy=e.clientY-pointerStart.y;drawTrace(pointerStart.x,pointerStart.y,e.clientX,e.clientY);
-        diveInputX=THREE.MathUtils.clamp(-dx/110,-1,1);diveInputY=THREE.MathUtils.clamp(-dy/110,-1,1);
-        keeperDiveMode=diveInputY>0.25?'high':diveInputY<-.25?'low':'mid';
-        keeperMarker.material.color.set(keeperDiveMode==='high'?0x53d7ff:keeperDiveMode==='low'?0xffcf45:0xd8e0e4);
-      }
-    }
-    function pointerUp(e){
-      if(pointerStart?.mode==='shooter' && !flying && shots<5){
-        if(e.type==='pointercancel'){pointerStart=null;return;}
-        updateShooterAim(e); pointerStart=null; shoot(); return;
-      }
-      if(pointerStart?.mode==='keeper' && !diveCommitted){
-        const dx=e.clientX-pointerStart.x,dy=e.clientY-pointerStart.y,len=Math.hypot(dx,dy);
-        if(len<24){diveInputX=0;diveInputY=0;keeperDiveMode='mid';clearTrace();}
-        else if(flying){startDive();if(diveCommitted){diveInputX=0;diveInputY=0;keeperDiveMode='mid';clearTrace();}}
-      }
-      pointerStart=null;
-    }
-    renderer.domElement.addEventListener('pointerdown',pointerDown); renderer.domElement.addEventListener('pointermove',pointerMove); renderer.domElement.addEventListener('pointerup',pointerUp); renderer.domElement.addEventListener('pointercancel',pointerUp);
-    document.querySelector('#reset').addEventListener('click',()=>{if(keeperTimer)clearTimeout(keeperTimer);clearTrace();roleSelect.style.display='grid';message.style.display='block';});
+    raw.src = src;
+  }
+  // Each chroma player's four poses are loaded AND registered from his OWN
+  // id — file names and pose keys are built from the same id string, so a
+  // player can only ever point at his own sprites. (The pose tables used to
+  // be written out by hand, entry by entry, and that is exactly how Mbappé
+  // ended up running and kicking with Messi's poses in earlier builds: one
+  // shared table, one wrong entry, wrong player on screen. Deriving every
+  // key from the player's own id makes that mix-up impossible.)
+  // Kit notes, measured on the real pixels: Messi's kit is white and
+  // sky-blue (green dominance ≈ 0, nothing of the shirt is touched);
+  // Neymar's kit DOES carry green (the 10, the collar, the sleeve trim, the
+  // sock stripes) but those greens peak at dominance ≈89 with g ≤ ~170, far
+  // under the 110 keep-threshold; Mbappé's kit is dark navy and white with
+  // NO green in it at all; Joaquín's red kit carries dark-green trim stripes
+  // (collar, sleeves, shorts hem, socks) whose lit edges reach into the
+  // feather band, yet on the keyed result every stripe survives whole —
+  // checked on the keyed pixels at full size. Every chroma background
+  // measures ≈245–253, so the same key erases only the bright background
+  // for all five.
+  var CHROMA_PLAYERS = ['ronaldo', 'messi', 'neymar', 'mbappe', 'joaquin'];
+  var KICK_POSE = {}; // filled per player from his own id in the loop below
+  var RUN_POSE  = {}; // filled per player from his own id in the loop below
+  CHROMA_PLAYERS.forEach(function(id){
+    loadChroma(id+'-back',         'assets/'+id+'-chroma-stand.png');
+    loadChroma(id+'-chroma-run-a', 'assets/'+id+'-chroma-run-a.png');
+    loadChroma(id+'-chroma-run-b', 'assets/'+id+'-chroma-run-b.png');
+    loadChroma(id+'-chroma-kick',  'assets/'+id+'-chroma-kick.png');
+    KICK_POSE[id] = id+'-chroma-kick';
+    RUN_POSE[id]  = [id+'-chroma-run-a', id+'-chroma-run-b'];
+  });
 
-    const clock=new THREE.Clock();
-    function animate(){ requestAnimationFrame(animate); const dt=Math.min(clock.getDelta(),0.04);
-      if(playerKickAnimation){
-        const a=playerKickAnimation; a.elapsed+=dt; const p=Math.min(1,a.elapsed/a.duration), eased=p*p*(3-2*p);
-        player.position.x=THREE.MathUtils.lerp(a.fromX,a.toX,eased); player.position.z=THREE.MathUtils.lerp(a.fromZ,a.toZ,eased);
-        player.material.rotation=-0.08*Math.sin(p*Math.PI);
-        if(a.frames){
-          const frameIndex=a.elapsed<0.10?0:a.elapsed<0.19?1:a.elapsed<0.28?2:a.elapsed<0.36?3:4;
-          if(player.material.map!==a.frames[frameIndex]){player.material.map=a.frames[frameIndex];player.material.needsUpdate=true;}
-        }
-        if(role==='shooter' && pendingShotData && a.elapsed>=a.launchAt){shotData=pendingShotData;pendingShotData=null;ball.position.copy(startBall);ball.rotation.set(0,0,0);ball.visible=true;}
-        if(p>=1){player.position.x=a.toX;player.position.z=a.toZ;player.material.rotation=0;if(a.frames && activePlayerIdleTexture){player.material.map=activePlayerIdleTexture;player.material.needsUpdate=true;}playerKickAnimation=null;}
-      }
-      if(flying && shotData){
-        shotData.elapsed+=dt; const v=shotData.velocity; ball.position.x+=v.x*dt; ball.position.z+=v.z*dt; v.y-=shotData.gravity*dt; ball.position.y+=v.y*dt;
-        ball.rotation.x+=dt*7; ball.rotation.z+=dt*5;
-        if(role==='shooter' && shotData.elapsed>shotData.keeperReactAt){
-          const diveProgress=Math.min(1,(shotData.elapsed-shotData.keeperReactAt)/0.34);
-          keeper.position.x+=(shotData.keeperTargetX-keeper.position.x)*Math.min(1,dt*5.5);
-          keeper.position.y=1.6+Math.sin(diveProgress*Math.PI)*0.27;
-          keeper.material.rotation=-Math.sign(shotData.keeperTargetX-keeperHome.x)*0.32;
-        }
-        if(role==='keeper' && shotData.diveAnimation){
-          const a=shotData.diveAnimation, p=Math.min(1,Math.max(0,(shotData.elapsed-a.at)/a.duration)), eased=p*p*(3-2*p);
-          keeper.position.x=THREE.MathUtils.lerp(a.fromX,a.toX,eased); keeper.position.y=THREE.MathUtils.lerp(a.fromY,a.toY,eased);
-          keeper.material.rotation=THREE.MathUtils.lerp(a.fromRotation,a.toRotation,eased); keeperMarker.position.x=keeper.position.x;
-          if(p>=1)clearTrace();
-        }
-        if(ball.position.y<0.36) ball.position.y=0.36;
-        const reached=ball.position.z<=keeper.position.z;
-        if(reached || shotData.elapsed>1.7){
-          const inFrame=Math.abs(ball.position.x)<goalW/2-0.35 && ball.position.y<goalH-0.18 && ball.position.y>0.35;
-          if(role==='shooter'){
-            const saved=Math.abs(ball.position.x-keeper.position.x)<0.78 && ball.position.y<2.28;
-            if(inFrame && !saved){score++;scoreEl.textContent=String(score);show('¡GOOOL!');} else if(saved){show('¡Atajada!');} else {show('¡Afuera!');}
-            flying=false; shotData=null;
-            setTimeout(()=>{if(shots<5){aimX=0;aimY=0;resetBall();updateAim();show('Ajusta la trayectoria y suelta para disparar');}else{show(`Fin del partido · ${score} de 5 goles`);hint.textContent='Pulsa Reiniciar para jugar otra vez';}},1050);
-          } else {
-            const heightMatch=shotData.mode===shotData.diveMode;
-            const saved=inFrame && Math.abs(ball.position.x-keeper.position.x)<0.92 && heightMatch;
-            if(saved){score++;scoreEl.textContent=String(score);show('¡Atajada!');} else if(inFrame){show('¡Gol del rival!');} else {show('¡El tiro se fue afuera!');}
-            flying=false; shotData=null;
-            diveInputX=0; diveInputY=0; diveCommitted=false; keeperDiveMode='mid'; pointerStart=null; clearTrace(); keeperMarker.material.color.set(0xd8e0e4);
-            keeperTimer=setTimeout(()=>{if(shots<5){launchKeeperShot();}else{show(`Fin · ${score} de 5 atajadas`);hint.textContent='Pulsa Reiniciar para elegir otra posición';}},1650);
+  // ---------- Ronaldo FRONT set, for atajar view ONLY ----------
+  // Oscar's correction: in atajar the camera faces the rival shooter, so
+  // he must run TOWARD it — the back-view run cycle he used there (his
+  // patear set) had him sprinting AWAY from the camera toward a ball
+  // that then flew at the viewer. These three poses are Ronaldo from
+  // the FRONT, on the same flat #00FF00 and keyed by the very same
+  // loadChroma: run stride A (one foot planted, the other folded back),
+  // run stride B (the opposite feet — checked on the keyed renders: the
+  // supporting foot truly swaps between them, and head and torso stay
+  // straight, facing the camera, in both) and a front kick with the
+  // ball painted flying at the camera. His dark-red kit is safe,
+  // checked on the keyed pixels: the shirt, the green 7 and the green
+  // trim come through whole, no holes — only the bright chroma is
+  // erased, exactly like his back set. Used ONLY when Ronaldo is the
+  // rival shooter in atajar view; in patear he keeps his back set
+  // untouched, and the other shooters kept their current atajar
+  // run until their own front set arrived (one at a time, like every
+  // set before this one).
+  loadChroma('ronaldo-chroma-front-run-a', 'assets/asset-001.png');
+  loadChroma('ronaldo-chroma-front-run-b', 'assets/asset-002.png');
+  loadChroma('ronaldo-chroma-front-kick',  'assets/asset-003.png');
+
+  // ---------- Messi FRONT set, for atajar view ONLY ----------
+  // The second shooter with a front set, same deal as Ronaldo's: three
+  // poses of Messi from the FRONT on the same flat #00FF00, keyed by the
+  // very same loadChroma — run stride A (one foot planted, the other
+  // folded back), run stride B (the v3: the opposite feet, checked on
+  // the keyed renders — the supporting foot truly swaps between A and
+  // B, and head and torso stay straight, facing the camera, in both,
+  // neither stride turned sideways) and a front kick with the ball
+  // painted flying at the camera. His sky-blue-and-white kit is safe,
+  // checked on the keyed pixels: the white stripes and the sky-blue
+  // stripes carry no green dominance at all, so the shirt, the blue 10
+  // and the shorts come through whole, no holes — only the bright
+  // chroma is erased, exactly like his back set. Used ONLY when Messi
+  // is the rival shooter in atajar view; in patear he keeps his back
+  // set (strides A v5 / B v4 and his back kick) untouched, and Neymar
+  // and Joaquín keep their current atajar run for now.
+  loadChroma('messi-chroma-front-run-a', 'assets/asset-004.png');
+  loadChroma('messi-chroma-front-run-b', 'assets/asset-005.png');
+  loadChroma('messi-chroma-front-kick',  'assets/asset-006.png');
+
+  // ---------- Mbappé FRONT set, for atajar view ONLY ----------
+  // The third shooter with a front set, same deal as Ronaldo's and
+  // Messi's: three poses of Mbappé from the FRONT on the same flat
+  // #00FF00, keyed by the very same loadChroma — run stride A (left
+  // foot planted, right folded back), run stride B (the opposite feet,
+  // checked on the keyed renders: the supporting foot truly swaps
+  // between A and B, and head and torso stay straight, facing the
+  // camera, in both, neither stride turned sideways) and a front kick
+  // with the ball painted flying at the camera. His dark-navy kit is
+  // safe, checked on the keyed pixels: navy and white carry no green
+  // dominance, so the shirt, the white 10 and the shorts come through
+  // whole, no holes — only the bright chroma is erased, exactly like
+  // his back set. Used ONLY when Mbappé is the rival shooter in
+  // atajar view; in patear he keeps his back set (strides A v3 / B v3
+  // and his back kick) untouched, and Joaquín kept his current atajar
+  // run for now (Neymar's own front set comes right below).
+  loadChroma('mbappe-chroma-front-run-a', 'assets/asset-007.png');
+  loadChroma('mbappe-chroma-front-run-b', 'assets/asset-008.png');
+  loadChroma('mbappe-chroma-front-kick',  'assets/asset-009.png');
+
+  // ---------- Neymar FRONT set, for atajar view ONLY ----------
+  // The fourth shooter with a front set, same deal as Ronaldo's,
+  // Messi's and Mbappé's: three poses of Neymar from the FRONT on the
+  // same flat #00FF00, keyed by the very same loadChroma — run stride
+  // A (left foot planted, right folded back), run stride B (the
+  // opposite feet, checked on the keyed renders: the supporting foot
+  // truly swaps between A and B, and head and torso stay straight,
+  // facing the camera, in both, neither stride turned sideways) and a
+  // front kick — the v2: foot forward, striking the ball at the moment
+  // of impact, ball painted flying at the camera (the v1 kick, foot
+  // drawn back with no visible strike, was discarded). His yellow
+  // kit is safe, checked on the keyed pixels: the green 10 measures a
+  // green dominance of at most ≈77 — far under the 110 keep-threshold,
+  // exactly like his back set — and among all his kit-green pixels
+  // (dominance 20–110) not one is erased, so the shirt, the green 10,
+  // the collar and the trim come through whole, no holes; only the
+  // bright chroma (≈249) is erased. Used ONLY when Neymar is the
+  // rival shooter in atajar view; in patear he keeps his back set
+  // (strides A v2 / B v3 and his back kick) untouched, and Joaquín's
+  // own front set comes right below.
+  loadChroma('neymar-chroma-front-run-a', 'assets/asset-010.png');
+  loadChroma('neymar-chroma-front-run-b', 'assets/asset-011.png');
+  loadChroma('neymar-chroma-front-kick',  'assets/asset-012.png');
+
+  // ---------- Joaquín FRONT set, for atajar view ONLY ----------
+  // The fifth shooter with a front set, the LAST one, same deal as
+  // Ronaldo's, Messi's, Mbappé's and Neymar's: three poses of Joaquín
+  // from the FRONT on the same flat #00FF00, keyed by the very same
+  // loadChroma — run stride A (the v3: right foot planted, left
+  // folded back), run stride B (the opposite feet, checked on the
+  // keyed renders: the supporting foot truly swaps between A v3 and
+  // B, and head and torso stay straight, facing the camera, in both,
+  // neither stride turned sideways — the A v1, aimed off to the left
+  // with the same foot as B, and the A v2, which repeated B's foot
+  // too, were both discarded) and a front kick with the foot forward,
+  // striking the ball at the moment of impact, ball painted flying at
+  // the camera. His red kit is safe, checked on the keyed pixels: the
+  // shirt, the white 7 and the dark-green trim come through whole, no
+  // holes — among all his kit-green pixels not one is erased, exactly
+  // like his back set; only the bright chroma (≈249–252) is erased.
+  // Used ONLY when Joaquín is the rival shooter in atajar view; in
+  // patear he keeps his back set (strides A v3 / B v3 and his back
+  // kick) untouched. With him, all five shooters run TOWARD the
+  // camera in atajar.
+  loadChroma('joaquin-chroma-front-run-a', 'assets/asset-013.png');
+  loadChroma('joaquin-chroma-front-run-b', 'assets/asset-014.png');
+  loadChroma('joaquin-chroma-front-kick',  'assets/asset-015.png');
+  var FRONT_RUN_POSE  = { ronaldo: ['ronaldo-chroma-front-run-a', 'ronaldo-chroma-front-run-b'],
+                          messi:   ['messi-chroma-front-run-a', 'messi-chroma-front-run-b'],
+                          mbappe:  ['mbappe-chroma-front-run-a', 'mbappe-chroma-front-run-b'],
+                          neymar:  ['neymar-chroma-front-run-a', 'neymar-chroma-front-run-b'],
+                          joaquin: ['joaquin-chroma-front-run-a', 'joaquin-chroma-front-run-b'] };
+  var FRONT_KICK_POSE = { ronaldo: 'ronaldo-chroma-front-kick',
+                          messi:   'messi-chroma-front-kick',
+                          mbappe:  'mbappe-chroma-front-kick',
+                          neymar:  'neymar-chroma-front-kick',
+                          joaquin: 'joaquin-chroma-front-kick' };
+
+  // ---------- Martínez in chroma: the first keeper with his OWN set ----------
+  // His three front poses — standing ready, full-stretch dive to his left
+  // (head and gloves left, feet right) and dive to his right (head and
+  // gloves right, feet left, the v2) — were generated on the same flat
+  // #00FF00 and are keyed by the very same loadChroma: the backgrounds
+  // measure ≈248 dominance, and his kit is plain blue (blue channel on top,
+  // green dominance below zero), so the key erases ONLY the bright green
+  // and the blue kit, gloves and skin come through untouched. His standing
+  // pose is registered under his usual 'martinez-front' key, so as the
+  // rival keeper in patear view he simply IS the new blue number 1. (In
+  // atajar view he now stands and dives with his BACK set instead —
+  // loaded right below — because there the camera is behind him.)
+  loadChroma('martinez-front',            'assets/asset-016.png');
+  loadChroma('martinez-chroma-dive-left',  'assets/asset-017.png');
+  loadChroma('martinez-chroma-dive-right', 'assets/asset-018.png');
+
+  // ---------- Martínez BACK set, for atajar view ONLY ----------
+  // Oscar's correction: in atajar the camera sits behind my keeper, so he
+  // must be seen FROM THE BACK — standing and diving. These three poses
+  // are Martínez from behind (blue kit, white 1 on his back, gloves):
+  // standing ready, full-stretch dive to his left (head and gloves left,
+  // feet right) and dive to his right (head and gloves right, feet left),
+  // generated on the same flat #00FF00 and keyed by the very same
+  // loadChroma — his kit is plain blue, so only the bright chroma is
+  // erased and the blue comes through untouched, exactly like his front
+  // set. They are used ONLY when Martínez is MY keeper in atajar view;
+  // as the rival keeper in patear view he keeps his front set above.
+  // The old hand-cut *-back.png files are NOT used for this: they are
+  // crossed between keepers. The other four keepers have no back set yet
+  // (one at a time, like the front sets) and keep their front poses in
+  // atajar for now.
+  loadChroma('martinez-chroma-back-stand',      'assets/asset-019.png');
+  loadChroma('martinez-chroma-back-dive-left',  'assets/asset-020.png');
+  loadChroma('martinez-chroma-back-dive-right', 'assets/asset-021.png');
+
+  // ---------- Courtois BACK set, for atajar view ONLY ----------
+  // The second keeper seen from behind in atajar, exactly like Martínez:
+  // standing ready from the back (dark-green kit, white 1 on his back,
+  // gloves), full-stretch dive to his left (head and gloves left, feet
+  // right) and dive to his right (head and gloves right, feet left), on
+  // the same flat #00FF00 and keyed by the very same loadChroma — his
+  // kit is DARK green, a different green from the bright chroma, and
+  // checked on the keyed pixels the shirt, shorts and socks come
+  // through whole; only the background is erased. Used ONLY when
+  // Courtois is MY keeper in atajar view; as the rival keeper in patear
+  // view he keeps his front set above. His high diagonal pair comes
+  // right below, with Martínez's — an upward drag now flies him too.
+  loadChroma('courtois-chroma-back-stand',      'assets/asset-022.png');
+  loadChroma('courtois-chroma-back-dive-left',  'assets/asset-023.png');
+  loadChroma('courtois-chroma-back-dive-right', 'assets/asset-024.png');
+
+  // ---------- Martínez BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
+  // Two more back poses of his, on the same flat #00FF00 and keyed by the
+  // same loadChroma: a diagonal flight up to his LEFT (gloves up-left,
+  // feet down-right) and up to his RIGHT (gloves up-right, feet
+  // down-left). They are what he throws when the drag goes to a side AND
+  // up; a drag along the ground keeps his horizontal back dives above.
+  // Only Martínez has them — the other four keepers fly only along the
+  // ground, exactly as before, until their turn comes.
+  loadChroma('martinez-chroma-back-dive-high-left',  'assets/asset-025.png');
+  loadChroma('martinez-chroma-back-dive-high-right', 'assets/asset-026.png');
+
+  // ---------- Courtois BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
+  // The same two diagonal flights, now for Courtois: from behind, dark-
+  // green kit with the white 1 on his back, a diagonal flight up to his
+  // LEFT (gloves up-left, feet down-right) and up to his RIGHT (gloves
+  // up-right, feet down-left), on the same flat #00FF00 and keyed by the
+  // same loadChroma — his dark green is a different green from the
+  // bright chroma, so the kit comes through whole, exactly like his
+  // other sets. They plug into the very same two-dimensional system
+  // Martínez already uses (kHigh, highDivePlace, the moving save
+  // point): an upward drag flies him diagonally, a ground-level drag
+  // keeps his horizontal back dives above. Only Martínez, Courtois and
+  // Alisson have them — the other two keepers fly only along the
+  // ground, exactly as before, until their turn comes.
+  loadChroma('courtois-chroma-back-dive-high-left',  'assets/asset-027.png');
+  loadChroma('courtois-chroma-back-dive-high-right', 'assets/asset-028.png');
+
+  // ---------- Courtois in chroma: the second keeper with his OWN set ----------
+  // Same deal as Martínez: three front poses of his own — standing ready,
+  // dive to his left (head and gloves left, feet right) and dive to his
+  // right (head and gloves right, feet left) — on the same flat #00FF00,
+  // keyed by the very same loadChroma and registered under his own id.
+  // His kit is the worry here and it checks out on the real pixels: the
+  // backgrounds measure ≈245–249 dominance while his dark-green kit keeps
+  // its green channel at ≤ ~169, and running this exact key over the
+  // standing pose erases NOT ONE kit pixel outright — only the brightest
+  // lit sheen on the sleeves and boots dips into the feather band, and
+  // the dark-green shirt, shorts and socks, the white 1 and the gloves
+  // come through whole. Only the bright chroma is removed, exactly as
+  // ordered: the dark green of the kit is a different green and stays.
+  loadChroma('courtois-front',            'assets/asset-029.png');
+  loadChroma('courtois-chroma-dive-left',  'assets/asset-030.png');
+  loadChroma('courtois-chroma-dive-right', 'assets/asset-031.png');
+
+  // ---------- Alisson in chroma: the third keeper with his OWN set ----------
+  // Same deal again: three front poses of his own — standing ready, dive
+  // to his left (head and gloves left, feet right) and dive to his right
+  // (head and gloves right, feet left) — on the same flat #00FF00, keyed
+  // by the very same loadChroma and registered under his own id. His kit
+  // is yellow, and yellow is safe by construction, checked on the real
+  // pixels: the shirt's red channel runs level with or above its green
+  // (a chest sample measures RGB 169/117/5 in shadow, dominance −52), so
+  // the kit's green dominance is NEGATIVE everywhere — the key, which
+  // only bites at dominance ≥110 with g ≥150, cannot touch a single kit
+  // pixel. The yellow shirt, shorts and socks, the white 1 and the black
+  // gloves come through whole; only the bright chroma is removed.
+  loadChroma('alisson-front',            'assets/asset-032.png');
+  loadChroma('alisson-chroma-dive-left',  'assets/asset-033.png');
+  loadChroma('alisson-chroma-dive-right', 'assets/asset-034.png');
+
+  // ---------- Alisson BACK set, for atajar view ONLY ----------
+  // The third keeper seen from behind in atajar, exactly like Martínez
+  // and Courtois: standing ready from the back (yellow kit, white 1 on
+  // his back, black gloves), full-stretch dive to his left (head and
+  // gloves left, feet right) and dive to his right (head and gloves
+  // right, feet left), on the same flat #00FF00 and keyed by the very
+  // same loadChroma — his kit is yellow, whose green dominance is
+  // negative (see his front set above), so only the bright chroma is
+  // erased and the yellow comes through untouched. Used ONLY when
+  // Alisson is MY keeper in atajar view; as the rival keeper in patear
+  // view he keeps his front set above. His high diagonal pair comes
+  // right below, with Martínez's and Courtois's — an upward drag now
+  // flies him too.
+  loadChroma('alisson-chroma-back-stand',      'assets/asset-035.png');
+  loadChroma('alisson-chroma-back-dive-left',  'assets/asset-036.png');
+  loadChroma('alisson-chroma-back-dive-right', 'assets/asset-037.png');
+
+  // ---------- Alisson BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
+  // The same two diagonal flights, now for Alisson: from behind, yellow
+  // kit with the white 1 on his back and black gloves, a diagonal flight
+  // up to his LEFT (gloves up-left, feet down-right) and up to his RIGHT
+  // (gloves up-right, feet down-left), on the same flat #00FF00 and
+  // keyed by the same loadChroma — yellow's green dominance is negative
+  // (see his sets above), so the kit comes through whole, exactly like
+  // his other sets. They plug into the very same two-dimensional system
+  // Martínez and Courtois already use (kHigh, highDivePlace, the moving
+  // save point): an upward drag flies him diagonally, a ground-level
+  // drag keeps his horizontal back dives above. Donnarumma has since
+  // landed his pair too (loaded with his back set below), and
+  // Casillas, the last one, has his below as well.
+  loadChroma('alisson-chroma-back-dive-high-left',  'assets/asset-038.png');
+  loadChroma('alisson-chroma-back-dive-high-right', 'assets/asset-039.png');
+
+  // ---------- Donnarumma in chroma: the fourth keeper with his OWN set ----------
+  // Same deal again: three front poses of his own — standing ready, dive
+  // to his left (head and gloves left, feet right) and dive to his right
+  // (head and gloves right, feet left) — on the same flat #00FF00, keyed
+  // by the very same loadChroma and registered under his own id. He is
+  // the teal-green 23 who used to lend everyone his generic dive poses;
+  // now he dives with his own. His kit is the worry here and it checks
+  // out on the real pixels: teal is green PLUS blue in near-equal parts,
+  // so its green dominance measures ≈ −4 on average and peaks at 59 on
+  // the brightest lit folds — far under the key's 110 keep-threshold,
+  // while the backgrounds measure ≈249. The key erases ONLY the bright
+  // chroma: the teal-green shirt, shorts and socks, the white 23 and the
+  // gloves come through whole.
+  loadChroma('donnarumma-front',            'assets/asset-040.png');
+  loadChroma('donnarumma-chroma-dive-left',  'assets/asset-041.png');
+  loadChroma('donnarumma-chroma-dive-right', 'assets/asset-042.png');
+
+  // ---------- Donnarumma BACK set, for atajar view ONLY ----------
+  // The fourth keeper seen from behind in atajar, exactly like Martínez,
+  // Courtois and Alisson: standing ready from the back (teal-green kit,
+  // white 23 on his back, gloves), full-stretch dive to his left (head
+  // and gloves left, feet right) and dive to his right (head and gloves
+  // right, feet left), on the same flat #00FF00 and keyed by the very
+  // same loadChroma — his kit is teal, green PLUS blue in near-equal
+  // parts (see his front set above), and checked on the real pixels of
+  // THIS set the key erases NOT ONE teal pixel: 460k/265k/250k teal
+  // pixels across the three poses, zero fully erased, zero even dipped
+  // into the feather band. Only the bright chroma is removed and the
+  // teal comes through untouched. Used ONLY when Donnarumma is MY
+  // keeper in atajar view; as the rival keeper in patear view he keeps
+  // his front set above. His high diagonal pair comes right below,
+  // like the others got theirs after their back sets.
+  loadChroma('donnarumma-chroma-back-stand',      'assets/asset-043.png');
+  loadChroma('donnarumma-chroma-back-dive-left',  'assets/asset-044.png');
+  loadChroma('donnarumma-chroma-back-dive-right', 'assets/asset-045.png');
+
+  // ---------- Donnarumma BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
+  // The same two diagonal flights, now for Donnarumma: from behind,
+  // teal-green kit with the white 23 on his back, a diagonal flight up
+  // to his LEFT (gloves up-left, feet down-right) and up to his RIGHT
+  // (gloves up-right, feet down-left), on the same flat #00FF00 and
+  // keyed by the same loadChroma — his kit is teal, green PLUS blue in
+  // near-equal parts, and checked on the real pixels of THIS pair the
+  // key erases NOT ONE teal pixel (341k/315k teal pixels across the two
+  // poses, zero fully erased, zero even dipped into the feather band;
+  // the backgrounds measure ≈251/249 dominance). Only the bright
+  // chroma is removed and the teal comes through untouched. They plug
+  // into the very same two-dimensional system Martínez, Courtois and
+  // Alisson already use (kHigh, highDivePlace, the moving save point):
+  // an upward drag flies him diagonally, a ground-level drag keeps his
+  // horizontal back dives above. Only Casillas still flew only along
+  // the ground then — his pair comes below, the last of the five.
+  loadChroma('donnarumma-chroma-back-dive-high-left',  'assets/asset-046.png');
+  loadChroma('donnarumma-chroma-back-dive-high-right', 'assets/asset-047.png');
+
+  // ---------- Casillas in chroma: the fifth keeper, the LAST own set ----------
+  // Same deal again: three front poses of his own — standing ready, dive
+  // to his left (head and gloves left, feet right) and dive to his right
+  // (head and gloves right, feet left) — on the same flat #00FF00, keyed
+  // by the very same loadChroma and registered under his own id. His kit
+  // is plain green, the obvious worry, and it checks out on the real
+  // pixels: his green is a MEDIUM green whose dominance sits far below
+  // the key's 110 keep-threshold (only ~0.8% of kit pixels even dip into
+  // the feather band, the same fringe behaviour as the four accepted
+  // sets before him), while the backgrounds measure ≈249. The key
+  // erases ONLY the bright chroma: the green shirt, shorts and socks,
+  // the white 1 and the black gloves come through whole. With him, all
+  // five keepers dive with their OWN chroma set — nobody uses the
+  // generic poses any more (the fallback in keeperDiveKey stays, unused).
+  loadChroma('casillas-front',            'assets/asset-048.png');
+  loadChroma('casillas-chroma-dive-left',  'assets/asset-049.png');
+  loadChroma('casillas-chroma-dive-right', 'assets/asset-050.png');
+
+  // ---------- Casillas BACK set, for atajar view ONLY ----------
+  // The fifth and LAST keeper seen from behind in atajar, exactly like
+  // Martínez, Courtois, Alisson and Donnarumma: standing ready from the
+  // back (medium-green kit, white 1 on his back, black gloves), full-
+  // stretch dive to his left (head and gloves left, feet right) and
+  // dive to his right (head and gloves right, feet left), on the same
+  // flat #00FF00 and keyed by the very same loadChroma — his kit is the
+  // worry here, a MEDIUM green against the bright chroma, and checked
+  // on the real pixels of THIS set the key erases NOT ONE kit pixel:
+  // across the three poses ~1.06M kit-green pixels, zero fully erased
+  // and zero even dipped into the feather band, while the backgrounds
+  // measure ≈251 dominance. Only the bright chroma is removed and the
+  // medium green comes through untouched, exactly like his front set.
+  // Used ONLY when Casillas is MY keeper in atajar view; as the rival
+  // keeper in patear view he keeps his front set above. His high
+  // diagonal pair comes right below, like the others got theirs after
+  // their back sets.
+  loadChroma('casillas-chroma-back-stand',      'assets/asset-051.png');
+  loadChroma('casillas-chroma-back-dive-left',  'assets/asset-052.png');
+  loadChroma('casillas-chroma-back-dive-right', 'assets/asset-053.png');
+
+  // ---------- Casillas BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
+  // The same two diagonal flights, now for Casillas — the FIFTH and
+  // LAST keeper to get them: from behind, medium-green kit with the
+  // white 1 on his back and black gloves, a diagonal flight up to his
+  // LEFT (gloves up-left, feet down-right) and up to his RIGHT (gloves
+  // up-right, feet down-left), on the same flat #00FF00 and keyed by
+  // the same loadChroma — his kit is the worry one last time, a MEDIUM
+  // green against the bright chroma, and checked on the real pixels of
+  // THIS pair the key erases NOT ONE kit pixel (342k/378k kit-green
+  // pixels across the two poses, zero fully erased; only the usual
+  // bright fringe, ~2%, dips into the feather band, the same behaviour
+  // as his front and back sets and as Courtois's high pair; the
+  // backgrounds measure ≈251 dominance). Only the bright chroma is
+  // removed and the medium green comes through untouched — verified on
+  // the keyed renders too: shirt, shorts, socks, the white 1 and the
+  // black gloves whole, no holes, no neon halo. They plug into the
+  // very same two-dimensional system the other four already use
+  // (kHigh, highDivePlace, the moving save point): an upward drag
+  // flies him diagonally, a ground-level drag keeps his horizontal
+  // back dives above. With him, ALL FIVE keepers fly diagonally.
+  loadChroma('casillas-chroma-back-dive-high-left',  'assets/asset-054.png');
+  loadChroma('casillas-chroma-back-dive-high-right', 'assets/asset-055.png');
+  var KEEPER_DIVE = { martinez:{left:'martinez-chroma-dive-left', right:'martinez-chroma-dive-right'},
+                      courtois:{left:'courtois-chroma-dive-left', right:'courtois-chroma-dive-right'},
+                      alisson:{left:'alisson-chroma-dive-left', right:'alisson-chroma-dive-right'},
+                      donnarumma:{left:'donnarumma-chroma-dive-left', right:'donnarumma-chroma-dive-right'},
+                      casillas:{left:'casillas-chroma-dive-left', right:'casillas-chroma-dive-right'} };
+  function keeperDiveKey(id, side){
+    var d = KEEPER_DIVE[id];
+    return d ? d[side] : 'dive-' + side; // fallback only: every keeper now has his own set
+  }
+  // Back-view sets for ATAJAR view only (the camera is behind my keeper):
+  // stand + dive left + dive right, all seen from behind. All five
+  // keepers have theirs now — Casillas, the last one, included — and
+  // all five also have the high diagonal pair. Patear view never
+  // reads this.
+  var KEEPER_BACK = { martinez:{stand:'martinez-chroma-back-stand', left:'martinez-chroma-back-dive-left', right:'martinez-chroma-back-dive-right',
+                                'high-left':'martinez-chroma-back-dive-high-left', 'high-right':'martinez-chroma-back-dive-high-right'},
+                      courtois:{stand:'courtois-chroma-back-stand', left:'courtois-chroma-back-dive-left', right:'courtois-chroma-back-dive-right',
+                                'high-left':'courtois-chroma-back-dive-high-left', 'high-right':'courtois-chroma-back-dive-high-right'},
+                      alisson:{stand:'alisson-chroma-back-stand', left:'alisson-chroma-back-dive-left', right:'alisson-chroma-back-dive-right',
+                                'high-left':'alisson-chroma-back-dive-high-left', 'high-right':'alisson-chroma-back-dive-high-right'},
+                      donnarumma:{stand:'donnarumma-chroma-back-stand', left:'donnarumma-chroma-back-dive-left', right:'donnarumma-chroma-back-dive-right',
+                                'high-left':'donnarumma-chroma-back-dive-high-left', 'high-right':'donnarumma-chroma-back-dive-high-right'},
+                      casillas:{stand:'casillas-chroma-back-stand', left:'casillas-chroma-back-dive-left', right:'casillas-chroma-back-dive-right',
+                                'high-left':'casillas-chroma-back-dive-high-left', 'high-right':'casillas-chroma-back-dive-high-right'} };
+  // ---------- Dive pose width correction, measured per sprite ----------
+  // A dive sprite's width spans GLOVE TIP to toe: the arms stretch past the
+  // head, so the body itself (head, torso, legs) fills only part of that
+  // width. Drawing the dive at width = standing height therefore squeezed
+  // the whole body into ~75–85% of its standing size — the keeper visibly
+  // SHRANK the moment he threw himself. Each factor below was measured on
+  // the real keyed pixels (figure area per unit span, cross-checked against
+  // head size, stand vs dive) and widens that pose so the BODY lands at
+  // exactly its standing scale; the pose only reaches further sideways,
+  // which is what a full-stretch dive does. Verified side by side at game
+  // scale: head and torso now match the standing sprite in every pose.
+  var DIVE_W = { 'martinez-chroma-dive-left':1.18, 'martinez-chroma-dive-right':1.25,
+                 'courtois-chroma-dive-left':1.28, 'courtois-chroma-dive-right':1.34,
+                 'alisson-chroma-dive-left':1.29, 'alisson-chroma-dive-right':1.28,
+                 'donnarumma-chroma-dive-left':1.44, 'donnarumma-chroma-dive-right':1.43,
+                 'casillas-chroma-dive-left':1.31, 'casillas-chroma-dive-right':1.30,
+                 'martinez-chroma-back-dive-left':1.37, 'martinez-chroma-back-dive-right':1.38,
+                 'courtois-chroma-back-dive-left':1.39, 'courtois-chroma-back-dive-right':1.36,
+                 'alisson-chroma-back-dive-left':1.38, 'alisson-chroma-back-dive-right':1.37,
+                 'donnarumma-chroma-back-dive-left':1.29, 'donnarumma-chroma-back-dive-right':1.34,
+                 'casillas-chroma-back-dive-left':1.33, 'casillas-chroma-back-dive-right':1.35,
+                 'martinez-chroma-back-dive-high-left':0.67, 'martinez-chroma-back-dive-high-right':0.72,
+                 'courtois-chroma-back-dive-high-left':0.71, 'courtois-chroma-back-dive-high-right':0.73,
+                 'alisson-chroma-back-dive-high-left':0.70, 'alisson-chroma-back-dive-high-right':0.71,
+                 'donnarumma-chroma-back-dive-high-left':0.61, 'donnarumma-chroma-back-dive-high-right':0.68,
+                 'casillas-chroma-back-dive-high-left':0.74, 'casillas-chroma-back-dive-high-right':0.71,
+                 'dive-left':1.00, 'dive-right':1.16 };
+  function diveWidth(key, base){ return base * (DIVE_W[key] || 1); }
+  // Martínez's BACK dive factors (1.37 / 1.38 above) were measured on the
+  // real keyed pixels of the new back set, cross-checking two independent
+  // rulers: the silhouette area against his back stand (area method gives
+  // 1.32 / 1.36) and the printed white 1 — the same glyph on the same
+  // shirt in both photos, its size compared rotation-invariantly from its
+  // bounding box (gives 1.37 / 1.38). Both agree the bare span ratio
+  // (1.15 / 1.34) would shrink him; at these factors his body keeps its
+  // standing scale and only reaches further sideways.
+  // Courtois's BACK dive factors (1.39 / 1.36 above) were measured the
+  // very same way on his back set: the printed-1 ruler (rotation-
+  // invariant bounding-box diagonal, stand glyph against dive glyph)
+  // gives 1.39 / 1.36 and the silhouette-area cross-check gives
+  // 1.32 / 1.35, while the bare span ratios (1.23 / 1.22) would shrink
+  // him just the same — at these factors his body keeps its standing
+  // scale and only reaches further sideways.
+  // Alisson's BACK dive factors (1.38 / 1.37 above) were measured the
+  // very same way on his back set, with the same script first validated
+  // on the two sets above (it reproduces their shipped factors). On
+  // his LEFT dive both rulers agree: printed-1 gives 1.38 and the
+  // silhouette-area cross-check 1.33. On his RIGHT dive the printed 1
+  // itself came out of the generation fatter — its short axis measures
+  // 79px against 46px standing — so its diagonal reads a false 1.28;
+  // there the area cross-check (1.37) and the glyph's long axis (144px
+  // in the dive against 145px standing, giving 1.39) bracket the truth,
+  // and 1.37 is what ships. The bare span ratios (1.37 / 1.38) would
+  // shrink him just the same — at these factors his body keeps its
+  // standing scale and only reaches further sideways.
+  // Donnarumma's BACK dive factors (1.29 / 1.34 above) were measured
+  // the very same way on his back set, with the same script first
+  // validated on the three sets above (it reproduces their shipped
+  // factors). His ruler is the printed 23 — TWO glyphs, read as the
+  // diagonal of their union box, the same rotation-invariant measure.
+  // On his RIGHT dive the 23 reads clean and the glyph rules: 1.34,
+  // with the silhouette-area cross-check at 1.30. On his LEFT dive the
+  // two digits come out of the generation stacked and overlapping, so
+  // their union diagonal under-reads (1.26); there the area cross-check
+  // (1.29) and the larger digit read on its own (1.30) agree, and 1.29
+  // is what ships — the Alisson-right situation, settled the same way.
+  // The bare span ratios (1.01 / 1.00) would shrink him badly — at
+  // these factors his body keeps its standing scale and only reaches
+  // further sideways.
+  // Casillas's BACK dive factors (1.33 / 1.35 above) were measured the
+  // very same way on his back set, with the same script first validated
+  // on the four sets above (it reproduces their shipped factors). His
+  // printed 1 reads clean on BOTH dives — a single white component,
+  // lying horizontal along the body — so here the two rulers agree
+  // closely and what ships sits between them, the way Donnarumma's
+  // right dive was settled: on the left the glyph gives 1.32 and the
+  // silhouette-area cross-check 1.33; on the right the glyph gives
+  // 1.36 and the area 1.33. The bare span ratio (1.00) would shrink
+  // him badly — at these factors his body keeps its standing scale
+  // and only reaches further sideways.
+  // Where the FEET bottom sits inside each back-dive sprite, as a fraction
+  // of the trimmed pose height, measured on the keyed pixels (feet-end
+  // columns): left 0.91, right 0.74 (in the right dive the boots point
+  // sideways, so their soles sit higher inside the frame). The atajar
+  // draw anchors the back dive by this point, so his feet land exactly on
+  // the standing keeper's ground line — he never floats. Courtois's back
+  // dives, measured the same way on the feet-end columns: left 0.88,
+  // right 0.92 — his boots hang lower in the frame than Martínez's do.
+  // Alisson's back dives, measured the same way on the feet-end columns
+  // (the definition that reproduces Courtois's pair exactly and
+  // Martínez's within a hundredth): left 0.84, right 0.90.
+  // Donnarumma's back dives, measured the same way: left 0.94, right
+  // 0.93 — his boots hang lowest in the frame of the four back sets, so
+  // his feet line sits deepest inside each pose.
+  // Casillas's back dives, measured the same way (the definition that
+  // reproduces the four pairs above): left 0.93, right 0.87 — on the
+  // right dive his boots point sideways and their soles sit higher
+  // inside the frame, like Martínez's right dive.
+  var DIVE_FEET = { 'martinez-chroma-back-dive-left':0.91, 'martinez-chroma-back-dive-right':0.74,
+                    'courtois-chroma-back-dive-left':0.88, 'courtois-chroma-back-dive-right':0.92,
+                    'alisson-chroma-back-dive-left':0.84, 'alisson-chroma-back-dive-right':0.90,
+                    'donnarumma-chroma-back-dive-left':0.94, 'donnarumma-chroma-back-dive-right':0.93,
+                    'casillas-chroma-back-dive-left':0.93, 'casillas-chroma-back-dive-right':0.87 };
+  // Martínez's HIGH back dives (0.67 / 0.72 above) were measured with the
+  // same printed-1 ruler: the glyph's height against his back stand's,
+  // corrected by each pose's aspect — at those factors the 1 on his back
+  // lands at exactly its standing size on screen, and the pose (taller
+  // than he stands, arms stretched above his head) only reaches higher.
+  // These poses are anchored by the GLOVES, not the feet — he is airborne.
+  // Where the glove cluster sits inside each trimmed pose, as fractions
+  // of its width/height, measured on the keyed pixels (dark glove mass in
+  // the top rows, hair blended in — the catch point sits between the
+  // hands anyway), and where the boots' centre sits horizontally:
+  var DIVE_GLOVES = { 'martinez-chroma-back-dive-high-left':{x:.269, y:.162},
+                      'martinez-chroma-back-dive-high-right':{x:.689, y:.147},
+                      'courtois-chroma-back-dive-high-left':{x:.275, y:.187},
+                      'courtois-chroma-back-dive-high-right':{x:.688, y:.185},
+                      'alisson-chroma-back-dive-high-left':{x:.254, y:.154},
+                      'alisson-chroma-back-dive-high-right':{x:.690, y:.159},
+                      'donnarumma-chroma-back-dive-high-left':{x:.282, y:.147},
+                      'donnarumma-chroma-back-dive-high-right':{x:.700, y:.145},
+                      'casillas-chroma-back-dive-high-left':{x:.242, y:.170},
+                      'casillas-chroma-back-dive-high-right':{x:.740, y:.167} };
+  var DIVE_FEETX  = { 'martinez-chroma-back-dive-high-left':.846,
+                      'martinez-chroma-back-dive-high-right':.124,
+                      'courtois-chroma-back-dive-high-left':.762,
+                      'courtois-chroma-back-dive-high-right':.188,
+                      'alisson-chroma-back-dive-high-left':.864,
+                      'alisson-chroma-back-dive-high-right':.134,
+                      'donnarumma-chroma-back-dive-high-left':.832,
+                      'donnarumma-chroma-back-dive-high-right':.133,
+                      'casillas-chroma-back-dive-high-left':.789,
+                      'casillas-chroma-back-dive-high-right':.126 };
+  // Courtois's HIGH back dives (0.71 / 0.73 above) were measured with
+  // the very same script and the very same printed-1 ruler, validated
+  // first on Martínez (it reproduces his shipped 0.67 / 0.72 and his
+  // glove/feet points exactly): the glyph's height against his back
+  // stand's, corrected by each pose's aspect. On his RIGHT pose the
+  // printed 1 is split into pieces by the shirt's folds, so the ruler
+  // reads the union of every piece in the glyph's column — at these
+  // factors his body keeps its standing scale in flight (drawn ≈192×343
+  // and ≈199×337 at KEEPER_H_NEAR, right alongside Martínez's flights)
+  // and the pose only reaches higher. His glove clusters and boots'
+  // centres were measured on the keyed pixels the same way as
+  // Martínez's (dark mass in the top rows / bottom rows): gloves
+  // (0.275, 0.187) and (0.688, 0.185), boots at 0.762 and 0.188 of the
+  // pose width — down-right on the left flight, down-left on the right.
+  // Alisson's HIGH back dives (0.70 / 0.71 above) were measured with
+  // the very same script and the very same printed-1 ruler, validated
+  // first on Martínez (it reproduces his shipped 0.67 / 0.72 exactly):
+  // the glyph's height against his back stand's, corrected by each
+  // pose's aspect — at these factors his body keeps its standing scale
+  // in flight (drawn ≈192×344 and ≈192×336 at KEEPER_H_NEAR, right
+  // alongside Martínez's and Courtois's flights) and the pose only
+  // reaches higher. His glove clusters and boots' centres were
+  // measured on the keyed pixels the same way (dark mass in the top
+  // rows / bottom rows): gloves (0.254, 0.154) and (0.690, 0.159),
+  // boots at 0.864 and 0.134 of the pose width — down-right on the
+  // left flight, down-left on the right.
+  // Donnarumma's HIGH back dives (0.61 / 0.68 above) were measured
+  // with the very same script and the very same printed-number ruler,
+  // validated first on Martínez, Courtois and Alisson (it reproduces
+  // their shipped 0.67/0.72, 0.71/0.73 and 0.70/0.71): the glyph's
+  // height against his back stand's, corrected by each pose's aspect.
+  // His ruler is the printed 23 — two glyphs, their union box's height
+  // (169px standing against 159px on the left flight and 141px on the
+  // right, whose digits came out of the generation split into pieces
+  // by the shirt's folds and were read as one union). At these factors
+  // his body keeps its standing scale in flight and the pose only
+  // reaches higher. His glove clusters and boots' centres were
+  // measured on the keyed pixels the same way (dark mass in the top
+  // rows / bottom rows): gloves (0.282, 0.147) and (0.700, 0.145),
+  // boots at 0.832 and 0.133 of the pose width — down-right on the
+  // left flight, down-left on the right.
+  // Casillas's HIGH back dives (0.74 / 0.71 above) were measured with
+  // the very same script and the very same printed-1 ruler, validated
+  // first on Martínez, Courtois, Alisson and Donnarumma (it reproduces
+  // their shipped 0.67/0.72, 0.71/0.73, 0.70/0.71 and 0.61/0.68): the
+  // glyph's height against his back stand's (190px standing against
+  // 161px on the left flight and 167px on the right), corrected by
+  // each pose's aspect — at these factors his body keeps its standing
+  // scale in flight (drawn ≈200×344 and ≈193×353 at KEEPER_H_NEAR,
+  // right alongside the other four's flights) and the pose only
+  // reaches higher. His printed 1 reads clean on BOTH flights — a
+  // single white component, upright on his back. His glove clusters
+  // and boots' centres were measured on the keyed pixels the same way
+  // (dark mass in the top rows / bottom rows): gloves (0.242, 0.170)
+  // and (0.740, 0.167), boots at 0.789 and 0.126 of the pose width —
+  // down-right on the left flight, down-left on the right.
+
+  // ---------- Action poses: full-stretch keeper dives ----------
+  // (Every shooter's kick pose and his two stride frames — A = one leg
+  // forward, B = the other, alternated during the run-up so nobody glides
+  // stiffly to the ball — are his own chroma set, loaded and registered
+  // above from his own id: true back views, head straight ahead, only the
+  // legs and arms alternate.)
+  loadImg('dive-left',    'assets/asset-056.png');
+  loadImg('dive-right',   'assets/asset-057.png');
+  var STRIDE_S = 0.09; // seconds per stride frame: ~8 leg swaps in the 0.7s run-up
+  // Where the painted ball sits inside each kick pose (fraction of the trimmed image),
+  // so the pose can be anchored with its ball exactly on the penalty spot.
+  // Messi's chroma kick ball was measured on the keyed pixels: centre ≈ (.505, .925).
+  // Neymar's was measured the same way on his keyed kick: the painted ball is
+  // its own component at centre ≈ (.355, .925) of the trimmed pose.
+  // Mbappé's likewise: its own component at centre ≈ (.567, .928).
+  // Joaquín's likewise: its own component at centre ≈ (.604, .902).
+  var KICK_BALL = { 'messi-chroma-kick':{x:.505, y:.925},
+                    'ronaldo-chroma-kick':{x:.602, y:.925}, 'neymar-chroma-kick':{x:.355, y:.925},
+                    'mbappe-chroma-kick':{x:.567, y:.928}, 'joaquin-chroma-kick':{x:.604, y:.902} };
+  // Where the painted ball sits inside the FRONT kick pose (fraction of the
+  // trimmed image), so the atajar kick can be anchored with its ball exactly
+  // on BALLK0 at contact — the same trick as the back kicks above. Ronaldo's
+  // front-kick ball was measured on the keyed pixels: one clean component
+  // at centre ≈ (.571, .866) of the trimmed pose, radius ≈ .087 of its height.
+  // Messi's front-kick ball touches his kicking boot, so it is not its own
+  // component: it was fitted as a circle to the ball's free edges (left,
+  // top and bottom) on the keyed pixels — centre ≈ (.344, .742) of the
+  // trimmed pose, radius ≈ .071 of its height, verified drawn over the
+  // keyed pose, where the fitted circle hugs the painted ball's outline.
+  // Mbappé's front-kick ball sits in front of his kicking boot the same
+  // way, so it was measured the same way: a circle fitted to the ball's
+  // free edges on the keyed pixels (the boot's boundary points left
+  // out; median residual under a pixel) — centre ≈ (.363, .861) of the
+  // trimmed pose, radius ≈ .104 of its height, verified drawn over the
+  // keyed pose, where the fitted circle hugs the painted ball's outline.
+  // Neymar's front-kick ball (the v2 pose: his foot forward, striking
+  // the ball at the moment of impact — the v1, foot drawn back with no
+  // visible strike, was discarded) flies at the camera the same way,
+  // so it was measured the same way: a circle fitted to the ball's
+  // free edges on the keyed pixels (right, bottom and top; the left
+  // edge hides behind his standing boot and the sock's and boots'
+  // boundary points were left out) — centre ≈ (.532, .882) of the
+  // trimmed pose, radius ≈ .113 of its height, verified drawn over
+  // the keyed pose, where the fitted circle hugs the painted ball's
+  // outline.
+  // Joaquín's front-kick ball (his foot forward, striking the ball at
+  // the moment of impact) flies at the camera the same way, so it was
+  // measured the same way: a circle fitted to the ball's free edges on
+  // the keyed pixels (left, right and bottom; the top hides behind his
+  // kicking boot) — centre ≈ (.391, .901) of the trimmed pose, radius
+  // ≈ .097 of its height, verified drawn over the keyed pose, where
+  // the fitted circle hugs the painted ball's outline.
+  var FRONT_KICK_BALL = { 'ronaldo-chroma-front-kick':{x:.571, y:.866},
+                          'messi-chroma-front-kick':{x:.344, y:.742},
+                          'mbappe-chroma-front-kick':{x:.363, y:.861},
+                          'neymar-chroma-front-kick':{x:.532, y:.882},
+                          'joaquin-chroma-front-kick':{x:.391, y:.901} };
+
+  // ---------- ONE size per character, in every pose ----------
+  // Standing sprites fill their whole frame (head to toe = image height), and the
+  // kick poses span the same body length along their diagonal, so kicks are
+  // drawn at the standing measure: height SHOOTER_H. Dive poses are drawn at
+  // width = the keeper's standing height TIMES that pose's DIVE_W factor
+  // (above): a dive's span is glove-tip to toe, longer than the body itself,
+  // so the bare standing height as width used to shrink the diving keeper.
+  // With the factor, the body keeps its standing scale in every pose — the
+  // dive only reaches wider, never smaller or bigger in the body.
+  // Pulled-back framing (Oscar: "quedan muy cerca"): the camera sits further
+  // away in BOTH views, so the foreground player is smaller, the goal sits
+  // higher on screen and there is real grass between shooter and keeper —
+  // before, the patear shooter's head (746−330=416) nearly touched the
+  // keeper's feet (440), and the atajar keeper (feet 906, height 356) was
+  // both cut off by the bottom edge and overlapped the rival shooter.
+  var SHOOTER_H = 262;      // my shooter, patear view (standing = run = kick pose)
+  var KEEPER_H_FAR = 188;   // rival keeper, patear view (standing height; dive width = this × DIVE_W)
+  var KEEPER_H_NEAR = 272;  // my keeper, atajar view (standing height; dive width = this × DIVE_W)
+  // Shooter run-up path (patear): starts behind-left of the ball, runs forward
+  // (up-screen) and lands just left of the penalty spot, feet on the same ground
+  // line where the kick pose's standing foot lands — so the swap has no jump.
+  // His head at the kick (768−262=506) now clears the keeper's feet (378) by
+  // a full stretch of grass.
+  var SH_START = {x:186, y:884};
+  var SH_END   = {x:248, y:768};
+
+  // ---------- DOM ----------
+  var roundLbl = document.getElementById('roundLbl');
+  var scoreLbl = document.getElementById('scoreLbl');
+  var scoreEl  = document.getElementById('score');
+  var rivalLbl = document.getElementById('rivalLbl');
+  var dotsEl   = document.getElementById('dots');
+  var statusEl = document.getElementById('statusLine');
+  var banner   = document.getElementById('banner');
+  var bannerTxt= document.getElementById('bannerTxt');
+  var modeOverlay = document.getElementById('modeOverlay');
+  var pickOverlay = document.getElementById('pickOverlay');
+  var endOverlay  = document.getElementById('endOverlay');
+  var pickGrid = document.getElementById('pickGrid');
+  var pickTitle = document.getElementById('pickTitle');
+  var pickSub = document.getElementById('pickSub');
+
+  // ---------- Audio ----------
+  var audioCtx = null;
+  function beep(freq, dur, type, vol, delay){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      var t0 = audioCtx.currentTime + (delay||0);
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type||'sine'; o.frequency.value = freq;
+      g.gain.value = vol||0.12;
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      o.stop(t0 + dur);
+    }catch(e){}
+  }
+  function sndKick(){ beep(170,.12,'square',.10); }
+  function sndGoal(){ beep(523,.15,'sine',.14); beep(659,.15,'sine',.14,.13); beep(784,.4,'sine',.16,.26); beep(2200,.3,'square',.05,.1); }
+  function sndSave(){ beep(240,.15,'square',.12); beep(140,.25,'sine',.12,.08); }
+  function sndPost(){ beep(1250,.35,'square',.08); beep(900,.3,'square',.05,.05); }
+  function sndOut(){ beep(330,.2,'sine',.09); beep(262,.3,'sine',.09,.16); }
+  function sndWhistle(){ beep(2200,.22,'square',.05); beep(2200,.3,'square',.05,.3); }
+
+  // ---------- Geometry ----------
+  // Patear view: goal ahead
+  var GOAL = {x:84, y:158, w:552, h:220};           // goal mouth — higher and a touch smaller: further away
+  var BALL0 = {x:360, y:724, r:25};                  // penalty spot (patear) — further from the goal line
+  // Atajar view: rival shooter in the distance, ball flies toward camera
+  var BALLK0 = {x:360, y:518, r:13};
+
+  // ---------- State ----------
+  var state = 'menu'; // menu | pick | aim | flight | result | ended
+  var mode = 'patear'; // patear | atajar
+  var me = null, rival = null;
+  var pendingShooter = null;   // patear flow, step 1: the chosen shooter, waiting for step 2
+  var pendingKeeper = null;    // atajar flow, step 1: the chosen keeper, waiting for step 2
+  var pickStep = 'shooter';    // shooter | keeperRival (patear) | keeperOwn | shooterRival (atajar)
+  var round = 0;              // 0..4
+  var results = [];           // 'gol' | 'atajado' | 'fuera'  (from the shooter's perspective in patear; in atajar 'gol' = conceded)
+  var score = 0;              // goals when patear, saves when atajar
+
+  var ball = {x:BALL0.x, y:BALL0.y, r:BALL0.r, tx:BALL0.x, ty:BALL0.y, t:1, spin:0};
+  var tSec = 0, runupT = 0, shooterKickT = 0, rivalKickT = 0, pendingShot = null;
+  var keeper = {x:360, y:GOAL.y+GOAL.h, tx:360, ty:GOAL.y+GOAL.h, rot:0, tRot:0}; // rival keeper (patear) or my keeper (atajar: y lower)
+  var dragging = false, dragX = 0, dragY = 0, aimX = 360, aimY = 320, power = 0;
+  var flightT = 1, flightDur = 0.55, resultTimer = 0, countdown = 0;
+  var diveP = 0; // 0..1 blend toward the keeper's real dive pose during a shot
+  var kDrag = false, kGrabDX = 0, kDragStartX = 0, kDragStartT = 0, kLastX = 0, kLastT = 0, kVelX = 0;
+  var kDragStartY = 0, kLastY = 0, kVelY = 0; // the drag is read in 2D now: Y velocity + start point
+  var kHigh = 0; // 0..1 — how HIGH my keeper's dive is aimed (the diagonal flights all five keepers now have); 0 = along the ground
+  var diveCommit = 0; // -1 | 0 | +1 — a fast swipe commits my keeper to a full dive that side
+  var diveHigh = false; // a committed dive flies diagonally up (keepers with high poses only) instead of along the ground
+  var outcome = null; // for current shot
+  var lastTs = 0;
+
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function pickRandom(list, notId){
+    var pool = list.filter(function(p){ return !notId || p.id !== notId; });
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+
+  // ---------- Flow ----------
+  function showMode(){
+    state = 'menu'; pickStep = 'shooter'; pendingShooter = null; pendingKeeper = null;
+    modeOverlay.hidden = false; pickOverlay.hidden = true; endOverlay.hidden = true;
+    banner.hidden = true;
+    statusEl.innerHTML = 'Elige cómo quieres jugar para empezar.';
+    roundLbl.textContent = '– / 5'; rivalLbl.textContent = '—';
+    renderDots();
+  }
+  // One picker grid builder for every selection screen: photo, name and kit,
+  // exactly like the shooter picker has always looked.
+  function fillPickGrid(list, onPick){
+    pickGrid.innerHTML = '';
+    list.forEach(function(p){
+      var b = document.createElement('button');
+      b.className = 'pick'; b.type = 'button';
+      b.setAttribute('aria-label', 'Elegir a ' + p.name);
+      b.innerHTML = '<img src="assets/'+p.id+'-front.png" alt="">' +
+                    '<b>'+p.name+'</b><small>'+p.kit+'</small>';
+      b.addEventListener('click', function(){ onPick(p); });
+      pickGrid.appendChild(b);
+    });
+  }
+  function showPick(m){
+    mode = m;
+    if(m === 'patear'){ showPickShooter(); return; }
+    showPickKeeperOwn();
+  }
+  // Atajar, step 1 of 2: YOUR keeper — the mirror of patear's step 1.
+  function showPickKeeperOwn(){
+    mode = 'atajar'; state = 'pick'; pickStep = 'keeperOwn'; pendingKeeper = null; pendingShooter = null;
+    modeOverlay.hidden = true; endOverlay.hidden = true; pickOverlay.hidden = false;
+    pickTitle.textContent = 'Elige a tu arquero';
+    pickSub.textContent = 'Paso 1 de 2: elige quién ataja. Después eliges al pateador rival que te va a patear.';
+    document.getElementById('backBtn').textContent = '← Volver';
+    fillPickGrid(KEEPERS, function(p){ pendingKeeper = p; showPickRivalShooter(); });
+    statusEl.innerHTML = 'Vas a atajar los 5 penales. Primero tu arquero; después, el pateador rival lo eliges tú.';
+  }
+  // Atajar, step 2 of 2: the rival shooter YOU choose kicks the whole tanda.
+  function showPickRivalShooter(){
+    state = 'pick'; pickStep = 'shooterRival';
+    modeOverlay.hidden = true; endOverlay.hidden = true; pickOverlay.hidden = false;
+    pickTitle.textContent = 'Elige al pateador rival';
+    pickSub.textContent = 'Paso 2 de 2: este pateador te va a patear los 5 penales de esta tanda. En la próxima tanda puedes cambiarlo.';
+    document.getElementById('backBtn').textContent = '← Volver a los arqueros';
+    fillPickGrid(SHOOTERS, function(p){ startMatch(pendingKeeper || me, p); });
+    statusEl.innerHTML = 'Ataja <em>' + (pendingKeeper ? pendingKeeper.name : '') + '</em>. ' +
+      'Ahora elige quién te patea los 5 penales.';
+  }
+  // Patear, step 1 of 2: your shooter.
+  function showPickShooter(){
+    mode = 'patear'; state = 'pick'; pickStep = 'shooter'; pendingShooter = null;
+    modeOverlay.hidden = true; endOverlay.hidden = true; pickOverlay.hidden = false;
+    pickTitle.textContent = 'Elige tu pateador';
+    pickSub.textContent = 'Paso 1 de 2: elige quién patea. Después eliges al arquero rival que te va a atajar.';
+    document.getElementById('backBtn').textContent = '← Volver';
+    fillPickGrid(SHOOTERS, function(p){ pendingShooter = p; showPickRivalKeeper(); });
+    statusEl.innerHTML = 'Vas a patear los 5 penales. Primero tu pateador; después, el arquero rival lo eliges tú.';
+  }
+  // Patear, step 2 of 2: the rival keeper YOU choose saves the whole tanda.
+  // He keeps his own dive poses (keeperDiveKey): all five keepers —
+  // Martínez, Courtois, Alisson, Donnarumma and Casillas — now dive
+  // with their own chroma sets.
+  function showPickRivalKeeper(){
+    state = 'pick'; pickStep = 'keeperRival';
+    modeOverlay.hidden = true; endOverlay.hidden = true; pickOverlay.hidden = false;
+    pickTitle.textContent = 'Elige al arquero rival';
+    pickSub.textContent = 'Paso 2 de 2: este arquero te va a atajar los 5 penales de esta tanda. En la próxima tanda puedes cambiarlo.';
+    document.getElementById('backBtn').textContent = '← Volver a los pateadores';
+    fillPickGrid(KEEPERS, function(p){ startMatch(pendingShooter || me, p); });
+    statusEl.innerHTML = 'Patea <em>' + (pendingShooter ? pendingShooter.name : '') + '</em>. ' +
+      'Ahora elige quién te ataja los 5 penales.';
+  }
+  function handleBack(){
+    if(pickStep === 'keeperRival'){ showPickShooter(); } // patear: back to step 1, not out of the flow
+    else if(pickStep === 'shooterRival'){ showPickKeeperOwn(); } // atajar: back to step 1, not out of the flow
+    else showMode();
+  }
+  function startMatch(player, chosenRival){
+    me = player;
+    // A chosen rival (picked in step 2 of either mode) plays the whole
+    // tanda: the rival keeper when patear, the rival shooter when atajar.
+    // Without one, the old random pick applies as a fallback.
+    rival = chosenRival || ((mode === 'patear') ? pickRandom(KEEPERS) : pickRandom(SHOOTERS));
+    pendingShooter = null; pendingKeeper = null;
+    round = 0; results = []; score = 0;
+    pickOverlay.hidden = true; modeOverlay.hidden = true; endOverlay.hidden = true;
+    scoreLbl.textContent = (mode === 'patear') ? 'Goles' : 'Atajadas';
+    rivalLbl.textContent = rival.name;
+    sndWhistle();
+    setupRound();
+  }
+  function setupRound(){
+    state = 'aim'; flightT = 1; outcome = null; dragging = false; power = 0; diveP = 0;
+    kDrag = false; diveCommit = 0; kVelX = 0; kVelY = 0; kHigh = 0; diveHigh = false;
+    ball.spin = 0; runupT = 0; shooterKickT = 0; rivalKickT = 0; pendingShot = null;
+    banner.hidden = true;
+    if(mode === 'patear'){
+      ball.x = BALL0.x; ball.y = BALL0.y; ball.r = BALL0.r; ball.tx = BALL0.x; ball.ty = BALL0.y;
+      keeper.x = 360; keeper.y = GOAL.y + GOAL.h; keeper.tx = keeper.x; keeper.ty = keeper.y; keeper.rot = 0; keeper.tRot = 0;
+      aimX = 360; aimY = 320;
+      statusEl.innerHTML = 'Tiro ' + (round+1) + ' de 5 — <em>arrastra para apuntar y suelta para patear</em>. ' +
+        'Te ataja <em>' + rival.name + '</em>.';
+    } else {
+      ball.x = BALLK0.x; ball.y = BALLK0.y; ball.r = BALLK0.r; ball.tx = BALLK0.x; ball.ty = BALLK0.y;
+      keeper.x = 360; keeper.y = 838; keeper.tx = 360; keeper.ty = 838; keeper.rot = 0; keeper.tRot = 0;
+      countdown = 1.25;
+      statusEl.innerHTML = 'Tiro ' + (round+1) + ' de 5 — <em>prepárate…</em> patea <em>' + rival.name + '</em>. ' +
+        'Toca a ' + me.name + ' y arrástralo; un envión rápido a un lado lo lanza para ese lado.' +
+        ((me.id === 'martinez' || me.id === 'courtois' || me.id === 'alisson' || me.id === 'donnarumma') ? ' Arrástralo en diagonal hacia arriba y volará a los tiros altos.' : '');
+    }
+    updateBoard();
+  }
+  function updateBoard(){
+    roundLbl.textContent = (state==='menu'||state==='pick') ? '– / 5' : (Math.min(round+1,5)) + ' / 5';
+    scoreEl.textContent = score;
+    renderDots();
+  }
+  function renderDots(){
+    dotsEl.innerHTML = '';
+    for(var i=0;i<5;i++){
+      var d = document.createElement('span');
+      d.className = 'dot';
+      if(results[i] === 'gol'){ d.classList.add(mode==='patear' ? 'gol' : 'fuera'); d.textContent = '⚽'; d.title = 'Gol'; }
+      else if(results[i] === 'atajado'){ d.classList.add('atajado'); d.textContent = '🧤'; d.title = 'Atajado'; }
+      else if(results[i] === 'fuera'){ d.classList.add('fuera'); d.textContent = '✖'; d.title = 'Fuera'; }
+      else { d.textContent = (i+1); if(i === round && (state==='aim'||state==='flight')) d.classList.add('now'); }
+      dotsEl.appendChild(d);
+    }
+  }
+  function showBanner(main, sub){
+    bannerTxt.innerHTML = main + (sub ? '<small>'+sub+'</small>' : '');
+    banner.hidden = false;
+  }
+  function finishShot(res){
+    outcome = res;
+    results[round] = res;
+    if(mode === 'patear'){
+      if(res === 'gol'){ score++; showBanner('¡GOOOL! ⚽', me.name + ' la clavó'); sndGoal(); }
+      else if(res === 'atajado'){ showBanner('¡ATAJÓ!', rival.name + ' adivinó el palo'); sndSave(); }
+      else { showBanner(ball._post ? '¡AL PALO!' : '¡FUERA!', ball._post ? 'Rebotó y salió…' : 'Se fue del arco'); if(ball._post) sndPost(); else sndOut(); }
+    } else {
+      if(res === 'atajado'){ score++; showBanner('¡ATAJADA! 🧤', me.name + ' la sacó'); sndSave(); }
+      else if(res === 'gol'){ showBanner('GOL RIVAL', rival.name + ' la puso lejos'); sndOut(); }
+      else { showBanner('¡LA FALLÓ!', rival.name + ' la mandó fuera'); sndOut(); }
+    }
+    updateBoard();
+    state = 'result'; resultTimer = 1.6;
+  }
+  function endMatch(){
+    state = 'ended'; sndWhistle();
+    var good = score;
+    document.getElementById('finalScore').textContent =
+      (mode === 'patear' ? good + ' goles' : good + ' atajadas') + ' de 5';
+    var msg;
+    if(mode === 'patear'){
+      msg = good >= 5 ? '¡Tanda perfecta! Los 5 adentro, ' + me.name + ' está intratable. ⭐' :
+            good >= 4 ? '¡Crack! Casi perfecta: ' + good + ' de 5 frente a ' + rival.name + '.' :
+            good >= 3 ? 'Buena tanda. ' + rival.name + ' te sacó ' + (5-good) + ', pero ganaste el duelo.' :
+            good >= 1 ? rival.name + ' te ganó el duelo esta vez. Busca los rincones y no te pases de potencia.' :
+                        'El arquero te leyó todos. Cambia los palos y varía la altura.';
+    } else {
+      msg = good >= 4 ? '¡Muralla! ' + me.name + ' atajó ' + good + ' de 5. Imposible pasarlo. ⭐' :
+            good >= 3 ? '¡Gran tanda bajo los palos! ' + good + ' atajadas contra ' + rival.name + '.' :
+            good >= 1 ? rival.name + ' te convirtió ' + (5-good) + '. Espera hasta último momento y lánzate con decisión.' :
+                        'Te convirtieron todo. Mira la pelota, no al pateador, y cubre un palo por tiro.';
+    }
+    document.getElementById('finalMsg').textContent = msg;
+    document.getElementById('againBtn').textContent = (mode === 'patear')
+      ? '↻ Revancha con ' + me.name + ' — elige arquero'
+      : '↻ Revancha con ' + me.name + ' — elige pateador';
+    endOverlay.hidden = false;
+    statusEl.innerHTML = 'Tanda terminada: <em>' + good + ' de 5</em>. ¿Revancha?';
+    updateBoard();
+  }
+
+  // ---------- Shooting: patear ----------
+  function shootPatear(){
+    // First the run-up: the shooter runs at the ball, then kicks
+    pendingShot = {aimX: aimX, aimY: aimY, power: power};
+    runupT = 0;
+    state = 'runup';
+    statusEl.innerHTML = '¡' + me.name + ' toma carrera…!';
+  }
+  function kickPatear(){
+    var aimX = pendingShot.aimX, aimY = pendingShot.aimY, power = pendingShot.power;
+    sndKick(); shooterKickT = 0.24; // the kick pose flashes only at contact
+    ball._post = false;
+    // Excess power balloons the ball upward
+    var tx = aimX, ty = aimY;
+    if(power > 1.02){ ty -= (power - 1.02) * 420; }
+    ball.tx = tx; ball.ty = ty;
+    // Is it on target?
+    var inX = tx > GOAL.x+6 && tx < GOAL.x+GOAL.w-6;
+    var inY = ty > GOAL.y+6 && ty < GOAL.y+GOAL.h-4;
+    var nearPost = inX && inY && (tx < GOAL.x+20 || tx > GOAL.x+GOAL.w-20 || ty < GOAL.y+20);
+    // Rival keeper AI: often reads the side, not always the height
+    var readsSide = Math.random() < 0.58;
+    var kx, ky;
+    if(readsSide){
+      kx = clamp(tx + rand(-70,70), GOAL.x+70, GOAL.x+GOAL.w-70);
+      ky = (GOAL.y+GOAL.h) - Math.abs(clamp((GOAL.y+GOAL.h) - ty, 0, GOAL.h)) * rand(.45,.8);
+    } else {
+      var side = Math.random() < .5 ? -1 : 1;
+      kx = 360 + side * rand(120, 235);
+      ky = GOAL.y + GOAL.h - rand(0, 110);
+      if(Math.random() < .18){ kx = 360 + rand(-30,30); ky = GOAL.y+GOAL.h; } // stays centre
+    }
+    keeper.tx = kx; keeper.ty = clamp(ky, GOAL.y+58, GOAL.y+GOAL.h);
+    keeper.tRot = clamp((kx-360)/260, -1, 1) * 1.05;
+    // Decide outcome now, animate accordingly
+    var gloveX = kx, gloveY = keeper.ty - 40;
+    var dGlove = Math.hypot(tx - gloveX, ty - gloveY);
+    if(!inX || !inY){ outcome = 'fuera'; }
+    else if(nearPost && Math.random() < .3){ outcome = 'fuera'; ball._post = true; }
+    else if(dGlove < 92){ outcome = 'atajado'; }
+    else { outcome = 'gol'; }
+    if(outcome === 'atajado'){
+      // Ball deflects off the gloves at contact
+      ball._deflect = true;
+    }
+    flightT = 0; flightDur = 0.55;
+    state = 'flight';
+    statusEl.innerHTML = '¡Pateó ' + me.name + '…!';
+  }
+
+  // ---------- Shooting: atajar (CPU kicks) ----------
+  function shootAtajar(){
+    sndKick(); rivalKickT = 0.3;
+    ball._post = false;
+    // Target somewhere in your goal (the camera plane), sometimes off target
+    var offTarget = Math.random() < 0.14;
+    var tx = rand(96, 624), ty = rand(648, 852);
+    if(offTarget){ tx = Math.random() < .5 ? rand(16, 60) : rand(660, 704); ty = rand(620, 800); }
+    ball.tx = tx; ball.ty = ty;
+    ball._offTarget = offTarget;
+    flightT = 0; flightDur = 0.62;
+    state = 'flight';
+    statusEl.innerHTML = '¡Pateó ' + rival.name + '! ¡Lánzate!';
+  }
+
+  // ---------- Update ----------
+  function update(dt){
+    if(state === 'runup'){
+      runupT += dt / 0.7; // a real run-up: he covers the ground before striking
+      if(runupT >= 1){ kickPatear(); } // contact: pose swap + ball flight, same frame
+      return;
+    }
+    if(state === 'aim' && mode === 'atajar'){
+      countdown -= dt;
+      if(countdown <= 0){ shootAtajar(); }
+    }
+    // The HEIGHT of my keeper's aim, eased toward where the drag points:
+    // a committed diagonal swipe holds it at full height, a plain drag
+    // held well above where it started raises it, anything along the
+    // ground lets it fall back to a ground-level dive. (All five
+    // keepers have high poses now; kHigh drives every one's draw
+    // and reach the same way.)
+    if(mode === 'atajar' && (state === 'aim' || state === 'flight')){
+      var khT = 0;
+      if(diveCommit !== 0) khT = diveHigh ? 1 : 0;
+      else if(kDrag && (kDragStartY - kLastY) > 55) khT = 1;
+      kHigh += (khT - kHigh) * Math.min(1, dt*10);
+      if(Math.abs(khT - kHigh) < 0.02) kHigh = khT;
+    }
+    if(state === 'flight'){
+      flightT += dt / flightDur;
+      var t = Math.min(1, flightT);
+      var e = 1 - Math.pow(1-t, 2); // ease-out
+      ball.spin += dt * 17; // the ball spins as it flies
+      if(mode === 'patear'){
+        ball.x = BALL0.x + (ball.tx - BALL0.x) * e;
+        ball.y = BALL0.y + (ball.ty - BALL0.y) * e - Math.sin(t*Math.PI) * 26;
+        ball.r = BALL0.r + (13 - BALL0.r) * e;
+        diveP = Math.min(1, diveP + dt/0.09); // rival keeper snaps into his dive pose
+        // Rival keeper dives
+        keeper.x += (keeper.tx - keeper.x) * Math.min(1, dt*7);
+        keeper.y += (keeper.ty - keeper.y) * Math.min(1, dt*7);
+        keeper.rot += (keeper.tRot - keeper.rot) * Math.min(1, dt*6);
+        if(t >= 1){
+          if(outcome === 'atajado' && ball._deflect){
+            ball.x += (ball.tx < 360 ? -46 : 46); ball.y += 26;
           }
+          finishShot(outcome);
+        }
+      } else {
+        ball.x = BALLK0.x + (ball.tx - BALLK0.x) * e;
+        ball.y = BALLK0.y + (ball.ty - BALLK0.y) * e + Math.sin(t*Math.PI) * 10;
+        // The ball grows as it flies toward the camera, but only to
+        // 26: at 42 it arrived at the goal 84px across — a third of
+        // the keeper's height, a beach ball. 26 matches the size the
+        // ball already has near the camera in patear view (BALL0.r
+        // 25), so both views agree on how big it is up close.
+        ball.r = BALLK0.r + (26 - BALLK0.r) * e;
+        // My keeper keeps following the drag DURING the flight too. (The
+        // follow code at the bottom of update() never ran while the ball
+        // was in the air — this flight block returns first — so the keeper
+        // froze wherever he stood when the shot came, and a late drag did
+        // nothing. Now he tracks keeper.tx here, exactly as in aim.)
+        keeper.x += (keeper.tx - keeper.x) * Math.min(1, dt*14);
+        var fRot = clamp((keeper.tx - keeper.x) / 90, -1, 1) * .55;
+        keeper.rot += (fRot - keeper.rot) * Math.min(1, dt*10);
+        // My keeper stretches into the dive pose the further he throws himself sideways
+        var dTarget = diveCommit !== 0 ? 1 : clamp((Math.abs(keeper.x - 360) - 46) / 60, 0, 1);
+        diveP += (dTarget - diveP) * Math.min(1, dt*11);
+        if(t >= 1){
+          var res;
+          if(ball._offTarget) res = 'fuera';
+          else {
+            // The save point is my keeper's GLOVES, and it MOVES with the
+            // height he was aimed at: along the ground it is the point it
+            // has always been; flying diagonally (Martínez, Courtois,
+            // Alisson, Donnarumma) it is where his gloves actually are
+            // in the high pose — aim low
+            // at a high ball, or fly at a ground ball, and it passes him by.
+            var gp = myGlovePoint();
+            var reach = Math.hypot(ball.tx - gp.x, ball.ty - gp.y);
+            res = (reach < 138) ? 'atajado' : 'gol';
+          }
+          finishShot(res);
         }
       }
-      renderer.render(scene,camera);
+      return;
     }
-    animate();
-    addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));resizeTrace();});
-  </script>
+    if(state === 'result'){
+      resultTimer -= dt;
+      if(resultTimer <= 0){
+        banner.hidden = true;
+        round++;
+        if(round >= 5){ endMatch(); }
+        else setupRound();
+      }
+      return;
+    }
+    // My keeper follows drag in atajar mode while aiming (during flight he
+    // is followed inside the flight block above, before it returns)
+    if(mode === 'atajar' && (state === 'aim' || state === 'flight')){
+      if(state === 'aim'){
+        if(diveCommit !== 0) diveP = Math.min(1, diveP + dt/0.08); // a committed swipe shows the dive at once
+        else diveP = Math.max(0, diveP - dt/0.15); // back to the standing sprite before the shot
+      }
+      var targetRot = clamp((keeper.tx - keeper.x) / 90, -1, 1) * .55;
+      keeper.x += (keeper.tx - keeper.x) * Math.min(1, dt*14);
+      keeper.rot += (targetRot - keeper.rot) * Math.min(1, dt*10);
+    }
+  }
+
+  // ---------- Drawing ----------
+  function seeded(n){ var x = Math.sin(n*127.1) * 43758.5453; return x - Math.floor(x); }
+
+  // ---------- Textured stadium scenery (pure 2D canvas, perspective) ----------
+  function drawStands(top, bottom){
+    var Hh = bottom - top;
+    // Night sky deepening toward the roofline
+    var g = ctx.createLinearGradient(0, top, 0, bottom);
+    g.addColorStop(0, '#0a1626'); g.addColorStop(.55, '#142c42'); g.addColorStop(1, '#1d4258');
+    ctx.fillStyle = g; ctx.fillRect(0, top, W, Hh);
+    // Floodlight wash from the two corner rigs
+    [-30, W+30].forEach(function(fx){
+      var fg = ctx.createRadialGradient(fx, top+4, 8, fx, top+4, 360);
+      fg.addColorStop(0, 'rgba(215,238,255,.55)'); fg.addColorStop(1, 'rgba(215,238,255,0)');
+      ctx.fillStyle = fg; ctx.fillRect(0, top, W, Hh);
+    });
+    // Crowd in receding tiers: rows grow as they come closer, each fan a
+    // head over shoulders, colours and gaps seeded so the stand is stable
+    var cols = ['#c94f42','#e8c832','#e8e4da','#3f7fd1','#7db35c','#e88bb0','#8d6e4c','#5b7fa6'];
+    var skin = ['#e8b98d','#c68863','#8a5a3b','#f0c8a0'];
+    var y = top + 30, row = 0;
+    while(y < bottom - 46){
+      var rh = 9 + ((y - top) / Hh) * 9;
+      ctx.fillStyle = 'rgba(0,0,0,.20)'; ctx.fillRect(0, y + rh*0.62, W, 2); // tier shadow
+      for(var x = 4; x < W; x += 14){
+        var s = seeded(row*131 + x*7);
+        if(s < 0.07) continue; // empty seat
+        var px = x + seeded(row*57 + x) * 5 - 2;
+        var py = y + seeded(row*91 + x*3) * 2;
+        ctx.globalAlpha = .5 + seeded(row*17 + x) * .5;
+        ctx.fillStyle = cols[Math.floor(seeded(row*31 + x*13) * cols.length)];
+        ctx.beginPath(); ctx.ellipse(px, py + rh*0.55, rh*0.36, rh*0.32, 0, Math.PI, 0); ctx.fill(); // shoulders
+        ctx.fillStyle = skin[Math.floor(seeded(row*43 + x*7) * skin.length)];
+        ctx.beginPath(); ctx.arc(px, py + rh*0.3, rh*0.17, 0, Math.PI*2); ctx.fill(); // head
+      }
+      // Walkway with railing every few rows, for depth
+      if(row % 5 === 4){
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = 'rgba(4,12,20,.55)'; ctx.fillRect(0, y + rh + 1, W, 6);
+        ctx.fillStyle = 'rgba(200,225,245,.35)'; ctx.fillRect(0, y + rh + 1, W, 1);
+        y += 6;
+      }
+      y += rh + 3; row++;
+    }
+    ctx.globalAlpha = 1;
+    // Floodlight rigs: bright lamp clusters on the roofline
+    [54, W-54].forEach(function(fx){
+      ctx.fillStyle = '#0d1a28'; ctx.fillRect(fx-26, top+2, 52, 15);
+      ctx.fillStyle = '#f4faff';
+      for(var li=0; li<4; li++) ctx.fillRect(fx-22 + li*12, top+5, 8, 4);
+      ctx.fillStyle = 'rgba(220,240,255,.16)';
+      ctx.beginPath(); ctx.moveTo(fx-20, top+17); ctx.lineTo(fx+20, top+17); ctx.lineTo(fx + (fx < W/2 ? 190 : -190), bottom); ctx.lineTo(fx + (fx < W/2 ? 90 : -290), bottom); ctx.closePath(); ctx.fill();
+    });
+    // Side vignette so the stand wraps around the pitch
+    var vg = ctx.createLinearGradient(0, 0, W, 0);
+    vg.addColorStop(0, 'rgba(0,0,0,.30)'); vg.addColorStop(.18, 'rgba(0,0,0,0)'); vg.addColorStop(.82, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.30)');
+    ctx.fillStyle = vg; ctx.fillRect(0, top, W, Hh);
+    // Segmented ad boards with a lit top edge and a shadow at the base
+    var boards = [['#f5f5f5', '#173d26', 'PENALES'], ['#173d26', '#ffffff', '⚽'], ['#d63a2f', '#ffffff', 'TANDA DE 5'], ['#f5f5f5', '#173d26', 'PENALES'], ['#173d26', '#ffffff', '⚽'], ['#e8c832', '#201a00', 'TANDA DE 5']];
+    var bw = W / boards.length;
+    ctx.font = '900 19px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    boards.forEach(function(b, bi){
+      ctx.fillStyle = b[0]; ctx.fillRect(bi*bw, bottom-34, bw, 34);
+      ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.fillRect(bi*bw, bottom-34, bw, 2);
+      ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(bi*bw, bottom-3, bw, 3);
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.fillRect(bi*bw + bw - 2, bottom-34, 2, 34);
+      ctx.fillStyle = b[1]; ctx.fillText(b[2], bi*bw + bw/2, bottom-16);
+    });
+  }
+  // Procedural grass texture tile: fine blade strokes and dry speckles,
+  // built once and tiled over the pitch — deterministic (seeded), no image.
+  var grassTile = null;
+  function makeGrassTile(){
+    var c = document.createElement('canvas'); c.width = c.height = 180;
+    var g2 = c.getContext('2d');
+    for(var i=0;i<2400;i++){
+      var s1 = seeded(i*3+1), s2 = seeded(i*7+2), s3 = seeded(i*13+5);
+      var x = s1*180, y = s2*180;
+      g2.strokeStyle = (s3 < .5 ? 'rgba(16,70,30,' : 'rgba(96,182,100,') + (0.10 + s3*0.20) + ')';
+      g2.lineWidth = 1;
+      g2.beginPath(); g2.moveTo(x, y); g2.lineTo(x + (s3-.5)*2, y - 2 - s3*3); g2.stroke();
+    }
+    for(var j=0;j<150;j++){
+      g2.fillStyle = 'rgba(170,152,82,.10)';
+      g2.fillRect(seeded(j*29+11)*180, seeded(j*37+3)*180, 2, 2);
+    }
+    return c;
+  }
+  function drawGrass(y0){
+    var gh = H - y0;
+    var g = ctx.createLinearGradient(0, y0, 0, H);
+    g.addColorStop(0, '#1e6c36'); g.addColorStop(.35, '#278a43'); g.addColorStop(1, '#3cab58');
+    ctx.fillStyle = g; ctx.fillRect(0, y0, W, gh);
+    // Perspective mowing bands: each band taller than the last as the
+    // pitch comes toward the camera, alternating light and tone
+    var bands = 6, tot = 0, acc = 0, i;
+    for(i=0;i<bands;i++) tot += (i + 1.6);
+    for(i=0;i<bands;i++){
+      var bh = gh * (i + 1.6) / tot;
+      ctx.fillStyle = (i % 2 === 0) ? 'rgba(255,255,255,.07)' : 'rgba(0,40,10,.05)';
+      ctx.fillRect(0, y0 + acc, W, bh);
+      acc += bh;
+    }
+    // Fine grass texture over everything
+    if(!grassTile) grassTile = makeGrassTile();
+    ctx.save(); ctx.globalAlpha = .5;
+    ctx.fillStyle = ctx.createPattern(grassTile, 'repeat');
+    ctx.fillRect(0, y0, W, gh);
+    ctx.restore();
+    // Worn patches: soft earth showing through, seeded and stable
+    [[.5,.05,150],[.22,.5,120],[.78,.38,110],[.5,.8,175],[.34,.95,95],[.68,.68,85]].forEach(function(p, pi){
+      var wx = p[0]*W, wy = y0 + p[1]*gh, wr = p[2];
+      var wg = ctx.createRadialGradient(wx, wy, 4, wx, wy, wr);
+      wg.addColorStop(0, 'rgba(152,130,70,' + (0.10 + seeded(pi*7)*0.05) + ')'); wg.addColorStop(1, 'rgba(152,130,70,0)');
+      ctx.fillStyle = wg;
+      ctx.save(); ctx.translate(wx, wy); ctx.scale(1, .45); ctx.translate(-wx, -wy);
+      ctx.beginPath(); ctx.arc(wx, wy, wr, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
+    // Floodlight pool brightening mid-pitch
+    var pool = ctx.createRadialGradient(W/2, y0 + gh*.45, 40, W/2, y0 + gh*.45, 430);
+    pool.addColorStop(0, 'rgba(255,255,220,.09)'); pool.addColorStop(1, 'rgba(255,255,220,0)');
+    ctx.fillStyle = pool; ctx.fillRect(0, y0, W, gh);
+    // Shadow the stands cast along the horizon line
+    var sh = ctx.createLinearGradient(0, y0, 0, y0 + 54);
+    sh.addColorStop(0, 'rgba(0,20,5,.35)'); sh.addColorStop(1, 'rgba(0,20,5,0)');
+    ctx.fillStyle = sh; ctx.fillRect(0, y0, W, 54);
+    // Pitch lines, with a soft shadow so they sit ON the grass. The box
+    // keeps its long-standing coordinates; a six-yard box joins it.
+    function strokePath(pts){
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for(var k=1;k<pts.length;k++) ctx.lineTo(pts[k][0], pts[k][1]);
+      ctx.stroke();
+    }
+    var boxPts = [[28, H-58],[150, GOAL.y+GOAL.h+58],[W-150, GOAL.y+GOAL.h+58],[W-28, H-58]];
+    var sixPts = [[196, H-58],[252, GOAL.y+GOAL.h+118],[W-252, GOAL.y+GOAL.h+118],[W-196, H-58]];
+    ctx.save(); ctx.translate(0, 3);
+    ctx.strokeStyle = 'rgba(0,30,8,.28)'; ctx.lineWidth = 6;
+    strokePath(boxPts); strokePath(sixPts);
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,.88)'; ctx.lineWidth = 4;
+    strokePath(boxPts); strokePath(sixPts);
+    ctx.beginPath(); ctx.arc(BALL0.x, BALL0.y+44, 10, 0, Math.PI*2); ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fill();
+  }
+  function drawGoal(){
+    var gx = GOAL.x, gy = GOAL.y, gw = GOAL.w, gh = GOAL.h;
+    // Shadow the goal casts on the grass just behind the line
+    ctx.fillStyle = 'rgba(0,25,5,.25)';
+    ctx.beginPath(); ctx.ellipse(gx + gw/2, gy + gh + 14, gw*0.52, 13, 0, 0, Math.PI*2); ctx.fill();
+    // Net box with real depth: the back panel is pulled in and up, and
+    // the side and top panels converge toward it
+    var bx = gx + 34, by = gy + 18, bw = gw - 68, bh = gh - 34;
+    ctx.fillStyle = 'rgba(232,244,255,.20)';
+    ctx.fillRect(bx, by, bw, bh); // back panel
+    ctx.beginPath(); // side + top panels, a touch dimmer
+    ctx.moveTo(gx, gy); ctx.lineTo(bx, by); ctx.lineTo(bx, by + bh); ctx.lineTo(gx, gy + gh); ctx.closePath();
+    ctx.moveTo(gx + gw, gy); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(gx + gw, gy + gh); ctx.closePath();
+    ctx.moveTo(gx, gy); ctx.lineTo(gx + gw, gy); ctx.lineTo(bx + bw, by); ctx.lineTo(bx, by); ctx.closePath();
+    ctx.fillStyle = 'rgba(232,244,255,.10)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.42)'; ctx.lineWidth = 1;
+    var i, f;
+    for(i = 0; i <= bw; i += 22){ ctx.beginPath(); ctx.moveTo(bx + i, by); ctx.lineTo(bx + i, by + bh); ctx.stroke(); } // back mesh
+    for(i = 0; i <= bh; i += 20){ ctx.beginPath(); ctx.moveTo(bx, by + i); ctx.lineTo(bx + bw, by + i); ctx.stroke(); }
+    for(f = 0; f <= 1.001; f += .125){ // converging side/top mesh
+      ctx.beginPath(); ctx.moveTo(gx, gy + gh*f); ctx.lineTo(bx, by + bh*f); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gx + gw, gy + gh*f); ctx.lineTo(bx + bw, by + bh*f); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gx + gw*f, gy); ctx.lineTo(bx + bw*f, by); ctx.stroke();
+    }
+    // A whisper of mesh across the mouth itself, so the net reads in
+    // front too — light enough that the keeper and the ball stay clear
+    ctx.strokeStyle = 'rgba(255,255,255,.16)';
+    for(i = 0; i <= gw; i += 24){ ctx.beginPath(); ctx.moveTo(gx + i, gy); ctx.lineTo(gx + i - 10, gy + gh); ctx.stroke(); }
+    for(i = 0; i <= gh; i += 22){ ctx.beginPath(); ctx.moveTo(gx, gy + i); ctx.lineTo(gx + gw, gy + i); ctx.stroke(); }
+    // Posts with cylindrical volume: shaded edges, bright core. The
+    // frame stays exactly on the GOAL rectangle the game measures.
+    function post(x0, y0, x1, y1, horiz){
+      var grd = horiz ? ctx.createLinearGradient(0, y0 - 6, 0, y0 + 6)
+                      : ctx.createLinearGradient(x0 - 6, 0, x0 + 6, 0);
+      grd.addColorStop(0, '#8d979f'); grd.addColorStop(.35, '#ffffff'); grd.addColorStop(.72, '#eef1f3'); grd.addColorStop(1, '#78838b');
+      ctx.strokeStyle = grd; ctx.lineWidth = 11; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.lineCap = 'butt';
+    }
+    post(gx, gy + gh, gx, gy, false);
+    post(gx, gy, gx + gw, gy, true);
+    post(gx + gw, gy, gx + gw, gy + gh, false);
+  }
+  function drawSprite(imgKey, cx, feetY, height, rot, sx, sy, alpha){
+    var im = imgs[imgKey];
+    var iw = im && (im.naturalWidth || im.width), ih = im && (im.naturalHeight || im.height);
+    if(!iw || !ih) return;
+    var wdt = height * (iw / ih);
+    ctx.save();
+    if(alpha !== undefined) ctx.globalAlpha = clamp(alpha, 0, 1);
+    ctx.translate(cx, feetY);
+    if(rot) ctx.rotate(rot);
+    if(sx || sy) ctx.scale(sx||1, sy||1);
+    // soft shadow
+    ctx.fillStyle = 'rgba(0,0,0,.25)';
+    ctx.beginPath(); ctx.ellipse(0, 2, wdt*.36, 10, 0, 0, Math.PI*2); ctx.fill();
+    ctx.drawImage(im, -wdt/2, -height, wdt, height);
+    ctx.restore();
+  }
+  // Wide action pose (keeper dive), drawn centred on a point at a given width
+  function drawPose(imgKey, cx, cy, width, alpha){
+    var im = imgs[imgKey];
+    var iw = im && (im.naturalWidth || im.width), ih = im && (im.naturalHeight || im.height);
+    if(!iw || !ih || alpha <= 0) return;
+    var hgt = width * (ih / iw);
+    ctx.save();
+    ctx.globalAlpha = clamp(alpha, 0, 1);
+    ctx.drawImage(im, cx - width/2, cy - hgt/2, width, hgt);
+    ctx.restore();
+  }
+  // Back-view dive, anchored to the ground: the pose is placed so the FEET
+  // bottom measured inside the sprite (DIVE_FEET, fraction of its height)
+  // lands exactly on feetY — the same line the standing keeper's feet use —
+  // so the diving keeper stretches along the ground instead of floating.
+  function drawPoseGrounded(imgKey, cx, feetY, width, alpha){
+    var im = imgs[imgKey];
+    var iw = im && (im.naturalWidth || im.width), ih = im && (im.naturalHeight || im.height);
+    if(!iw || !ih || alpha <= 0) return;
+    var hgt = width * (ih / iw);
+    var f = DIVE_FEET[imgKey] || 1;
+    ctx.save();
+    ctx.globalAlpha = clamp(alpha, 0, 1);
+    ctx.drawImage(im, cx - width/2, feetY - hgt * f, width, hgt);
+    ctx.restore();
+  }
+  // Which side my keeper is diving to: a committed swipe's side wins,
+  // otherwise the side of centre he is on. Used by the HIGH dive and by
+  // the save point, so what is drawn and what can reach the ball agree.
+  function myDiveSide(){
+    return diveCommit !== 0 ? (diveCommit < 0 ? 'left' : 'right') : (keeper.x < 360 ? 'left' : 'right');
+  }
+  // Placement of a HIGH back dive (all five keepers'): the pose is drawn at width =
+  // his standing height × its measured DIVE_W factor and anchored so its
+  // GLOVE cluster (DIVE_GLOVES) lands on the point his dive is aimed at —
+  // sideways with his travel, and up to 150px above the ground-level
+  // reach as kHigh rises. The placement is clamped inside the frame, so
+  // the flying body is never cut, and the returned glove point is read
+  // back from the CLAMPED placement: the save check uses exactly the
+  // gloves that are drawn. Returns null when he has no high pose that
+  // side or it has not loaded yet.
+  function highDivePlace(side){
+    var back = me && KEEPER_BACK[me.id];
+    var key = back && back['high-' + side];
+    if(!key) return null;
+    var im = imgs[key];
+    var iw = im && (im.naturalWidth || im.width), ih = im && (im.naturalHeight || im.height);
+    if(!iw || !ih) return null;
+    var wdt = diveWidth(key, KEEPER_H_NEAR), hgt = wdt * (ih / iw);
+    var g = DIVE_GLOVES[key];
+    var sgn = side === 'left' ? -1 : 1;
+    var gx = keeper.x + sgn * 40 * diveP;
+    var gy = (keeper.y - 120) - 150 * kHigh * diveP;
+    var x = clamp(gx - g.x * wdt, 4, W - 4 - wdt);
+    var y = clamp(gy - g.y * hgt, 4, H - 4 - hgt);
+    return { key:key, x:x, y:y, w:wdt, h:hgt,
+             gloveX: x + g.x * wdt, gloveY: y + g.y * hgt,
+             feetX: x + (DIVE_FEETX[key] || .5) * wdt };
+  }
+  // My keeper's save point in atajar: his gloves. Along the ground (and
+  // for every keeper without high poses) it is the long-standing point,
+  // (keeper.x, keeper.y − 120). When a keeper WITH the diagonal pair —
+  // all five, Casillas included — is mid-flight in a high dive, it is
+  // the glove point of the pose being drawn.
+  function myGlovePoint(){
+    if(me && KEEPER_BACK[me.id] && KEEPER_BACK[me.id]['high-left'] && diveP > 0.05 && kHigh >= 0.5){
+      var pl = highDivePlace(myDiveSide());
+      if(pl) return {x: pl.gloveX, y: pl.gloveY};
+    }
+    return {x: keeper.x, y: keeper.y - 120};
+  }
+  // Kick pose at the SAME height as the standing sprite (SHOOTER_H), anchored so
+  // the ball painted in the pose sits exactly on the penalty spot and its standing
+  // foot lands on the run-up's ground line (SH_END.y) — same size, same floor.
+  function drawKickPose(imgKey, alpha){
+    var im = imgs[imgKey];
+    var iw = im && (im.naturalWidth || im.width), ih = im && (im.naturalHeight || im.height);
+    if(!iw || !ih || alpha <= 0) return;
+    var anch = KICK_BALL[imgKey];
+    var hgt = SHOOTER_H, wdt = hgt * (iw / ih);
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,.22)';
+    ctx.beginPath(); ctx.ellipse(BALL0.x - 92, SH_END.y + 2, 118, 12, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = clamp(alpha, 0, 1);
+    ctx.drawImage(im, BALL0.x - anch.x * wdt, BALL0.y - anch.y * hgt, wdt, hgt);
+    ctx.restore();
+  }
+  // Front kick pose (atajar ONLY), at the height the rival arrived with,
+  // anchored so the ball painted in the pose sits exactly on BALLK0 — the
+  // game's ball leaves from that same point on the same frame, so at
+  // contact the two balls coincide: no double ball, no size jump.
+  function drawFrontKickPose(imgKey, height, alpha){
+    var im = imgs[imgKey];
+    var iw = im && (im.naturalWidth || im.width), ih = im && (im.naturalHeight || im.height);
+    if(!iw || !ih || alpha <= 0) return;
+    var anch = FRONT_KICK_BALL[imgKey];
+    var hgt = height, wdt = hgt * (iw / ih);
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,.22)';
+    ctx.beginPath(); ctx.ellipse(BALLK0.x - 6, 534, 62, 11, 0, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = clamp(alpha, 0, 1);
+    ctx.drawImage(im, BALLK0.x - anch.x * wdt, BALLK0.y - anch.y * hgt, wdt, hgt);
+    ctx.restore();
+  }
+  // The ball's black panels sit on the 12 vertices of an icosahedron —
+  // the real geometry of a classic football — projected as the sphere
+  // turns, so the panels genuinely rotate with ball.spin.
+  var BALL_PENTS = (function(){
+    var phi = (1 + Math.sqrt(5)) / 2, pts = [];
+    [[0,1,phi],[0,1,-phi],[0,-1,phi],[0,-1,-phi],[1,phi,0],[1,-phi,0],[-1,phi,0],[-1,-phi,0],[phi,0,1],[-phi,0,1],[phi,0,-1],[phi,0,-1]].forEach(function(p){
+      var l = Math.hypot(p[0], p[1], p[2]);
+      pts.push([p[0]/l, p[1]/l, p[2]/l]);
+    });
+    return pts;
+  })();
+  function drawBallPent(cx, cy, rad, rot){
+    ctx.beginPath();
+    for(var i=0;i<5;i++){
+      var a = rot + i * (Math.PI*2/5) - Math.PI/2;
+      var px = cx + Math.cos(a)*rad, py = cy + Math.sin(a)*rad;
+      if(i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath(); ctx.fill();
+  }
+  function drawBall(x, y, r, spin){
+    // Ground shadow: it stays under the ball and shrinks and fades as
+    // the ball lifts through its flight arc (flightT drives it, the
+    // same clock the trajectory uses — the path itself is untouched)
+    var lift = (state === 'flight') ? Math.sin(Math.PI * Math.min(1, flightT)) : 0;
+    var shScale = 1 - lift * .25;
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,20,5,' + (0.28 - lift * 0.12).toFixed(3) + ')';
+    ctx.beginPath();
+    ctx.ellipse(x, y + r*.9 + lift * (mode === 'patear' ? 26 : 8), r*.95*shScale, r*.3*shScale, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.clip();
+    // Sphere base: radial volume shading, lit from the upper left
+    var bg = ctx.createRadialGradient(x - r*.38, y - r*.42, r*.12, x, y, r*1.05);
+    bg.addColorStop(0, '#ffffff'); bg.addColorStop(.55, '#eef0f2'); bg.addColorStop(.85, '#c9ced3'); bg.addColorStop(1, '#99a0a7');
+    ctx.fillStyle = bg; ctx.fillRect(x - r, y - r, r*2, r*2);
+    // Rotate the panel sphere: spin around the vertical axis, with a
+    // slow tumble so the pattern never just slides sideways
+    var a = spin || 0, ca = Math.cos(a), sa = Math.sin(a);
+    var tilt = 0.55 + Math.sin(a * 0.7) * 0.15, ct = Math.cos(tilt), st = Math.sin(tilt);
+    var proj = BALL_PENTS.map(function(p){
+      var X = p[0]*ca + p[2]*sa, Z = -p[0]*sa + p[2]*ca, Y = p[1];
+      return [X, Y*ct - Z*st, Y*st + Z*ct];
+    });
+    // Seams between neighbouring panels on the visible face
+    ctx.strokeStyle = 'rgba(92,100,107,.5)'; ctx.lineWidth = Math.max(1, r*.045);
+    for(var i=0;i<proj.length;i++){
+      for(var j=i+1;j<proj.length;j++){
+        var d = Math.hypot(proj[i][0]-proj[j][0], proj[i][1]-proj[j][1], proj[i][2]-proj[j][2]);
+        if(d < 1.15 && proj[i][2] > 0.02 && proj[j][2] > 0.02){
+          ctx.beginPath();
+          ctx.moveTo(x + proj[i][0]*r*.8, y + proj[i][1]*r*.8);
+          ctx.lineTo(x + proj[j][0]*r*.8, y + proj[j][1]*r*.8);
+          ctx.stroke();
+        }
+      }
+    }
+    // Black pentagons, foreshortened and faded as they near the rim
+    proj.forEach(function(p, idx){
+      if(p[2] <= 0.02) return;
+      ctx.fillStyle = 'rgba(23,25,29,' + (0.55 + 0.45*p[2]).toFixed(3) + ')';
+      drawBallPent(x + p[0]*r*.8, y + p[1]*r*.8, r * .30 * (0.45 + 0.55*p[2]), a + idx*0.7);
+    });
+    // Rim shading, then the specular highlight
+    var rim = ctx.createRadialGradient(x, y, r*.55, x, y, r);
+    rim.addColorStop(0, 'rgba(0,0,0,0)'); rim.addColorStop(1, 'rgba(10,15,20,.30)');
+    ctx.fillStyle = rim; ctx.fillRect(x - r, y - r, r*2, r*2);
+    var hl = ctx.createRadialGradient(x - r*.4, y - r*.45, 0, x - r*.4, y - r*.45, r*.55);
+    hl.addColorStop(0, 'rgba(255,255,255,.75)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = hl; ctx.fillRect(x - r, y - r, r*2, r*2);
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.lineWidth = Math.max(1.2, r*.06); ctx.strokeStyle = 'rgba(30,34,38,.65)'; ctx.stroke();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    if(mode === 'patear'){
+      drawStands(0, 300);
+      drawGrass(300);
+      drawGoal();
+      // Rival keeper (front sprite): idle shuffle by pure translation — never
+      // scaled, stretched or squashed, so his size never changes between poses.
+      var kIdleX = 0, kBobY = 0;
+      if(state === 'aim'){ kIdleX = Math.sin(tSec*1.7)*13; kBobY = Math.sin(tSec*3.4)*2; }
+      if(state === 'runup'){ kIdleX = Math.sin(tSec*1.7)*13*(1-runupT); }
+      var kSlumpY = (state === 'result' && outcome === 'gol') ? 7 : 0;
+      var kSaveHop = (state === 'result' && outcome === 'atajado') ? -Math.abs(Math.sin(tSec*9))*6 : 0;
+      // Only when he actually throws himself sideways does he swap to the dive
+      // pose — drawn at width = his standing height × that pose's DIVE_W
+      // factor (the span is glove-tip to toe, so the factor is what keeps
+      // the BODY at standing scale), centred on his own position, travelling
+      // with keeper.x/keeper.y.
+      var kDiving = (state === 'flight' || state === 'result') && Math.abs(keeper.tx - 360) > 55;
+      var kDiveA = kDiving ? diveP : 0;
+      if(kDiveA < 1) drawSprite(rival ? rival.id+'-front' : 'martinez-front', keeper.x + kIdleX, keeper.y + 6 + kBobY + kSlumpY + kSaveHop, KEEPER_H_FAR, keeper.rot * (1 - kDiveA), 1, 1, 1 - kDiveA);
+      if(kDiveA > 0){
+        var dKey = keeperDiveKey(rival ? rival.id : 'martinez', keeper.tx < 360 ? 'left' : 'right');
+        var dW = diveWidth(dKey, KEEPER_H_FAR);
+        var dCx = keeper.x;
+        var dCy = keeper.y - 74;
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,.2)';
+        ctx.beginPath(); ctx.ellipse(dCx, GOAL.y + GOAL.h + 16, dW * 0.39, 9, 0, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+        drawPose(dKey, dCx, dCy, dW, kDiveA);
+      }
+      // My shooter from behind, ALWAYS at SHOOTER_H — he only translates and
+      // tilts, never scales. Sequence: waits behind the ball (SH_START), RUNS
+      // forward to the ball (SH_END) CYCLING his two real stride frames with
+      // the body leaning into the run, and only on arrival swaps to the kick
+      // pose for an instant while the ball flies; then he's back to the
+      // standing sprite where he struck it.
+      var shX = SH_START.x, shY = SH_START.y + Math.sin(tSec*2.1)*3, shRot = Math.sin(tSec*1.3)*0.012;
+      if(state === 'runup'){
+        var rp = Math.min(1, runupT);
+        var rEase = Math.pow(rp, 1.3); // accelerates into the ball
+        shX = SH_START.x + (SH_END.x - SH_START.x) * rEase;
+        // The stride frames carry the leg motion now: only a whisper of bob
+        // is left, no more gliding stiffly in the standing sprite.
+        shY = SH_START.y + (SH_END.y - SH_START.y) * rEase - Math.abs(Math.sin(rp*Math.PI*4))*2.5;
+        shRot = 0.04; // leaning into the run (the stride poses lean already)
+      }
+      if(state === 'flight' || state === 'result'){ shX = SH_END.x; shY = SH_END.y; shRot = 0.02; }
+      if(state === 'result' && outcome === 'gol'){
+        shY = SH_END.y - Math.abs(Math.sin(tSec*9))*13; // celebrates where he kicked
+        shRot = Math.sin(tSec*9)*0.05;
+      }
+      if(state === 'result' && outcome && outcome !== 'gol'){ shY = SH_END.y + 4; shRot = 0.035; }
+      // The kick pose appears ONLY at contact (shooterKickT starts the same frame
+      // the ball leaves): quick fade in, brief hold, fade out — same height and
+      // same ground line as the runner, so nothing grows or jumps.
+      var shId = (me && state !== 'menu' && state !== 'pick') ? me.id : 'ronaldo';
+      var poseA = 0;
+      if(shooterKickT > 0){
+        var kpp = 1 - shooterKickT/0.24;
+        poseA = kpp < 0.2 ? kpp/0.2 : (kpp > 0.7 ? (1-kpp)/0.3 : 1);
+      }
+      // While running up, swap the standing sprite for the stride cycle:
+      // frame A, frame B, A, B… all the way to the ball, same SHOOTER_H and
+      // same ground line, so the size never changes mid-run either.
+      var shKey = shId+'-back';
+      if(state === 'runup') shKey = RUN_POSE[shId][Math.floor(runupT * 0.7 / STRIDE_S) % 2];
+      if(poseA < 1) drawSprite(shKey, shX, shY, SHOOTER_H, shRot, 1, 1, 1 - poseA);
+      if(poseA > 0) drawKickPose(KICK_POSE[shId], poseA);
+      drawBall(ball.x, ball.y, ball.r, ball.spin);
+      // Aim guide while dragging
+      if(state === 'aim' && dragging){
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 3; ctx.setLineDash([10,8]);
+        ctx.beginPath(); ctx.moveTo(BALL0.x, BALL0.y); ctx.lineTo(aimX, aimY); ctx.stroke();
+        ctx.setLineDash([]);
+        var onT = aimX > GOAL.x && aimX < GOAL.x+GOAL.w && aimY > GOAL.y && aimY < GOAL.y+GOAL.h;
+        ctx.strokeStyle = onT ? '#e8c832' : '#d63a2f'; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(aimX, aimY, 17, 0, Math.PI*2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(aimX-24, aimY); ctx.lineTo(aimX+24, aimY); ctx.moveTo(aimX, aimY-24); ctx.lineTo(aimX, aimY+24); ctx.stroke();
+        // Power meter
+        ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(60, H-46, 240, 16);
+        ctx.fillStyle = power > 1.02 ? '#d63a2f' : '#e8c832';
+        ctx.fillRect(62, H-44, 236 * clamp(power/1.25, 0, 1), 12);
+        ctx.fillStyle = '#fff'; ctx.font = '700 12px system-ui'; ctx.textAlign = 'left';
+        ctx.fillText('POTENCIA', 60, H-54);
+        ctx.restore();
+      }
+      if(state === 'aim' && !dragging){
+        ctx.fillStyle = 'rgba(0,0,0,.4)';
+        ctx.beginPath(); ctx.arc(BALL0.x, BALL0.y - 64, 5 + 2*Math.sin(Date.now()/300), 0, Math.PI*2); ctx.fill();
+      }
+    } else {
+      // ATAJAR view: from behind my keeper, rival shoots toward camera
+      drawStands(0, 210);
+      drawGrass(210);
+      // Distance shooter: he waits behind his ball (front sprite) and, in
+      // the last stretch of the countdown, RUNS up to it — the kick gesture
+      // fires only when he arrives and the ball leaves (shootAtajar), never
+      // before. A rival WITH a front set — all five shooters now: Ronaldo,
+      // Messi, Mbappé, Neymar and Joaquín — runs TOWARD the
+      // camera cycling his front strides and growing (the rFront branch below);
+      // the fallback below still cycles the same back-view stride frames A/B as in
+      // patear mode, at the same height as always.
+      // Pulled back with the rest of the atajar framing: smaller (190) and
+      // higher — his feet at 556/522 clear my keeper's head (888−272=616)
+      // with grass to spare, instead of standing on top of him.
+      var rX = 334, rY = 556 + Math.sin(tSec*2.1)*3, rRot = Math.sin(tSec*1.3)*0.012;
+      var rKey = rival ? rival.id+'-front' : 'messi-front';
+      var rH = 190; // the rival's drawn height — a front-run rival grows it as he nears the camera
+      // A rival with a FRONT set (Ronaldo first, Messi after him, Mbappé third, Neymar fourth, Joaquín fifth and last) runs TOWARD the
+      // camera in atajar: he waits on the FAR side of his ball — feet
+      // at 470, above BALLK0 (360, 518) on screen, never on the camera
+      // side — a touch smaller at 172, and in the last stretch of the
+      // countdown runs DOWN-screen to the ball, cycling his front
+      // strides A/B, growing to 198 as he arrives, feet landing on the
+      // ball's own ground line (532). At contact he swaps to his front
+      // kick pose, anchored by its painted ball on BALLK0. All five
+      // rivals take this branch now; the one below is only a fallback.
+      var rFront = !!(rival && FRONT_RUN_POSE[rival.id]);
+      var rKickA = 0; // the front-kick pose blend, at contact only
+      if(rFront){
+        rX = 340; rY = 470 + Math.sin(tSec*2.1)*3; rH = 172;
+        if(state === 'aim' && countdown < 0.6){
+          var frp = clamp(1 - countdown/0.6, 0, 1);
+          var frE = Math.pow(frp, 1.3);
+          rX = 340 + 14 * frE;
+          rY = 470 + 62 * frE - Math.abs(Math.sin(frp*Math.PI*4))*2;
+          rH = 172 + 26 * frE;
+          rRot = 0.01;
+          rKey = FRONT_RUN_POSE[rival.id][Math.floor(frp * 0.6 / STRIDE_S) % 2];
+        }
+        if(state === 'flight' || state === 'result'){ rX = 354; rY = 532; rH = 198; rRot = 0.01; }
+        if(state === 'result' && outcome === 'gol'){ rY = 532 - Math.abs(Math.sin(tSec*9))*10; rRot = Math.sin(tSec*9)*0.05; }
+        if(state === 'result' && outcome && outcome !== 'gol'){ rY = 536; rRot = 0.03; }
+        if(rivalKickT > 0){
+          var fkp = 1 - rivalKickT/0.3;
+          rKickA = fkp < 0.2 ? fkp/0.2 : (fkp > 0.7 ? (1-fkp)/0.3 : 1);
+        }
+        if(rKickA > 0) drawFrontKickPose(FRONT_KICK_POSE[rival.id], rH, rKickA);
+        if(rKickA < 1) drawSprite(rKey, rX, rY, rH, rRot, 1, 1, 1 - rKickA);
+      } else {
+        if(state === 'aim' && countdown < 0.6){
+          var rrp = clamp(1 - countdown/0.6, 0, 1);
+          var rrE = Math.pow(rrp, 1.3);
+          rX = 334 + 20 * rrE;
+          rY = 556 - 34 * rrE - Math.abs(Math.sin(rrp*Math.PI*4))*2;
+          rRot = 0.04;
+          if(rival) rKey = RUN_POSE[rival.id][Math.floor(rrp * 0.6 / STRIDE_S) % 2];
+        }
+        if(state === 'flight' || state === 'result'){ rX = 354; rY = 522; rRot = 0.02; }
+        if(rivalKickT > 0){
+          var rk = 1 - rivalKickT/0.3;
+          rRot = -0.15*Math.sin(rk*Math.PI);
+          rY += Math.sin(rk*Math.PI)*5;
+        }
+        if(state === 'result' && outcome === 'gol'){ rY = 522 - Math.abs(Math.sin(tSec*9))*10; rRot = Math.sin(tSec*9)*0.05; }
+        if(state === 'result' && outcome && outcome !== 'gol'){ rY = 526; rRot = 0.03; }
+        drawSprite(rKey, rX, rY, 190, rRot);
+      }
+      drawBall(ball.x, ball.y, ball.r, ball.spin);
+      // Countdown cue
+      if(state === 'aim'){
+        ctx.fillStyle = 'rgba(0,0,0,.5)';
+        ctx.fillRect(W/2-92, 96, 184, 52);
+        ctx.fillStyle = '#fff'; ctx.font = '900 25px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(countdown > .45 ? '¡PREPÁRATE!' : '¡AHÍ VA!', W/2, 123);
+      }
+      // Goal frame around the camera (my goal)
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 12; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(18, H); ctx.lineTo(18, 560); ctx.lineTo(W-18, 560); ctx.lineTo(W-18, H); ctx.stroke(); ctx.lineCap = 'butt';
+      // My keeper from behind: idle sway by translation only — never stretched
+      // or squashed. He stays in the centre at his standing size and only when
+      // he has thrown himself far enough sideways does he swap to the dive
+      // pose, drawn at width = his standing height × that pose's DIVE_W
+      // factor (glove-tip-to-toe span; the factor keeps the BODY at standing
+      // scale), centred on his own position as he travels across the goal.
+      var myRot = keeper.rot + Math.sin(tSec*1.6)*0.015;
+      // Feet at 888: the whole keeper (272 tall, head at 616) now fits inside
+      // the frame — before, feet at 906 left him cut off by the bottom edge.
+      var myY = 888 + Math.sin(tSec*2.2)*2.5;
+      if(state === 'result' && outcome === 'atajado'){ myY = 888 - Math.abs(Math.sin(tSec*9))*9; }
+      if(state === 'result' && outcome === 'gol'){ myY = 893; }
+      // In atajar the camera is BEHIND my keeper, so he must be seen from
+      // the back — standing and diving. All five keepers — Martínez
+      // (blue 1), Courtois (dark-green 1), Alisson (yellow 1),
+      // Donnarumma (teal 23) and Casillas (green 1), the last one —
+      // have their own BACK sets in chroma (stand + both dives, the
+      // number on the back): when any of them is my keeper he uses
+      // those here, with his back dives anchored to the ground line
+      // (his feet stay on myY, the same line as when he stands); in
+      // patear view every keeper keeps his front set untouched.
+      var myBack = me && KEEPER_BACK[me.id];
+      var myStandKey = myBack ? myBack.stand : ((me && KEEPER_DIVE[me.id]) ? me.id+'-front' : (me ? me.id+'-back' : 'martinez-back'));
+      if(diveP < 1) drawSprite(myStandKey, keeper.x, myY, KEEPER_H_NEAR, myRot, 1, 1, 1 - diveP);
+      if(diveP > 0){
+        var mySide = keeper.x < 360 ? 'left' : 'right';
+        // A keeper with high poses (all five now), aimed HIGH: he
+        // leaves the ground — his diagonal back pose, gloves up on the
+        // side he is flying to, anchored by the gloves on the point he
+        // was aimed at (the same point the save check reads), shadow
+        // left on the ground under his boots. Aimed along the ground,
+        // or any other keeper, the poses are the ones already there.
+        var myHigh = (myBack && kHigh >= 0.5) ? highDivePlace(myDiveSide()) : null;
+        if(myHigh){
+          ctx.save();
+          ctx.fillStyle = 'rgba(0,0,0,.18)';
+          ctx.beginPath(); ctx.ellipse(myHigh.feetX, 890, myHigh.w * 0.34, 8, 0, 0, Math.PI*2); ctx.fill();
+          ctx.globalAlpha = clamp(diveP, 0, 1);
+          ctx.drawImage(imgs[myHigh.key], myHigh.x, myHigh.y, myHigh.w, myHigh.h);
+          ctx.restore();
+        } else if(myBack){
+          var myBackDiveKey = myBack[mySide];
+          var myBackW = diveWidth(myBackDiveKey, KEEPER_H_NEAR);
+          ctx.save();
+          ctx.fillStyle = 'rgba(0,0,0,.2)';
+          ctx.beginPath(); ctx.ellipse(keeper.x, myY + 4, myBackW * 0.42, 9, 0, 0, Math.PI*2); ctx.fill();
+          ctx.restore();
+          drawPoseGrounded(myBackDiveKey, keeper.x, myY, myBackW, diveP);
+        } else {
+          var myDiveKey = keeperDiveKey(me ? me.id : 'martinez', mySide);
+          drawPose(myDiveKey, keeper.x, 750, diveWidth(myDiveKey, KEEPER_H_NEAR), diveP);
+        }
+      }
+    }
+  }
+
+  function loop(ts){
+    var dt = Math.min(0.033, (ts - lastTs)/1000 || 0);
+    lastTs = ts;
+    tSec += dt; // master clock for all idle/procedural animation
+    if(shooterKickT > 0) shooterKickT -= dt;
+    if(rivalKickT > 0) rivalKickT -= dt;
+    if(state !== 'menu' && state !== 'pick' && state !== 'ended') update(dt);
+    else if(mode === 'atajar' && state === 'ended') { /* freeze */ }
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- Pointer input ----------
+  function canvasPos(e){
+    var r = canvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (W / r.width), y: (e.clientY - r.top) * (H / r.height) };
+  }
+  // Grab test for my keeper in atajar: he is drawn with his feet at y=888
+  // and KEEPER_H_NEAR tall, centred on keeper.x. A touch only "takes" him
+  // if it lands on his body — a generous box around him — never anywhere
+  // else on screen (before, a touch ANYWHERE teleported him to that spot,
+  // which is why he felt impossible to actually grab).
+  function keeperHit(p){
+    return Math.abs(p.x - keeper.x) < 150 && p.y > 545 && p.y < 905;
+  }
+  canvas.addEventListener('pointerdown', function(e){
+    if(state !== 'aim' && !(mode==='atajar' && state==='flight')) return;
+    var p = canvasPos(e);
+    if(mode === 'atajar'){
+      if(!keeperHit(p)) return; // not on the keeper: no grab, no teleport
+      canvas.setPointerCapture(e.pointerId);
+      kDrag = true;
+      kGrabDX = keeper.x - p.x; // he stays glued under the finger — no jump on grab
+      kDragStartX = p.x; kDragStartT = performance.now();
+      kLastX = p.x; kLastT = kDragStartT; kVelX = 0;
+      kDragStartY = p.y; kLastY = p.y; kVelY = 0; // the drag's height is read from here
+      return;
+    }
+    canvas.setPointerCapture(e.pointerId);
+    if(mode === 'patear' && state === 'aim'){
+      dragging = true; dragX = p.x; dragY = p.y;
+      aimX = clamp(360 + (p.x - BALL0.x) * 1.12, -30, W+30);
+      aimY = clamp(322 + (p.y - BALL0.y) * 0.78, -60, 640);
+      power = clamp(Math.hypot(p.x - BALL0.x, p.y - BALL0.y) / 300, 0, 1.3);
+    }
+  });
+  canvas.addEventListener('pointermove', function(e){
+    var p = canvasPos(e);
+    if(mode === 'patear' && dragging && state === 'aim'){
+      dragX = p.x; dragY = p.y;
+      aimX = clamp(360 + (p.x - BALL0.x) * 1.12, -30, W+30);
+      aimY = clamp(322 + (p.y - BALL0.y) * 0.78, -60, 640);
+      power = clamp(Math.hypot(p.x - BALL0.x, p.y - BALL0.y) / 300, 0, 1.3);
+    }
+    if(mode === 'atajar' && kDrag && (state === 'aim' || state === 'flight')){
+      var now = performance.now();
+      var dtm = Math.max(1, now - kLastT) / 1000;
+      kVelX = kVelX * 0.5 + ((p.x - kLastX) / dtm) * 0.5; // smoothed finger velocity, canvas px/s
+      kVelY = kVelY * 0.5 + ((p.y - kLastY) / dtm) * 0.5; // …and vertically: up is negative
+      kLastX = p.x; kLastY = p.y; kLastT = now;
+      var disp = p.x - kDragStartX;
+      var dispY = p.y - kDragStartY; // negative = the drag is climbing
+      if(diveCommit !== 0 && (p.x - 360) * diveCommit < -30){
+        diveCommit = 0; diveHigh = false; // dragged back across the centre: the dive is cancelled
+      }
+      if(diveCommit === 0 && (Math.abs(kVelX) > 850 || (Math.abs(disp) > 95 && now - kDragStartT < 300) ||
+                              (dispY < -75 && Math.abs(disp) > 55 && now - kDragStartT < 350))){
+        // A fast swipe to one side: he dives THAT side at once, without
+        // waiting to be dragged all the way there first. A swipe that
+        // also CLIMBS — fast upward flick, or the drag already well
+        // above where it started — commits a DIAGONAL dive instead:
+        // same side, gloves up (the high poses all five keepers have).
+        diveCommit = Math.abs(kVelX) > 120 ? (kVelX < 0 ? -1 : 1) : (disp < 0 ? -1 : 1);
+        diveHigh = (kVelY < -320) || (dispY < -70);
+        keeper.tx = clamp(360 + diveCommit * 235, 120, W - 120);
+      } else if(diveCommit === 0){
+        keeper.tx = clamp(p.x + kGrabDX, 120, W-120); // plain drag: follows the finger, grab offset kept
+      }
+    }
+  });
+  function endDrag(){
+    kDrag = false; // releasing the finger lets go of the keeper (his target stays where he is)
+    if(mode === 'patear' && dragging && state === 'aim'){
+      dragging = false;
+      if(power < 0.12){
+        // Too soft: treat as cancelled aim, recentre
+        aimX = 360; aimY = 322; power = 0;
+        statusEl.innerHTML = 'Arrastra más lejos para darle potencia y suelta para patear.';
+        return;
+      }
+      shootPatear();
+    }
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', function(){ dragging = false; kDrag = false; });
+
+  // ---------- Buttons ----------
+  document.getElementById('modeKick').addEventListener('click', function(){ showPick('patear'); });
+  document.getElementById('modeKeep').addEventListener('click', function(){ showPick('atajar'); });
+  document.getElementById('backBtn').addEventListener('click', handleBack);
+  document.getElementById('againBtn').addEventListener('click', function(){
+    if(!me) return;
+    if(mode === 'patear'){ pendingShooter = me; showPickRivalKeeper(); } // same shooter, new keeper if you want one
+    else { pendingKeeper = me; showPickRivalShooter(); } // same keeper, new shooter if you want one
+  });
+  document.getElementById('againPickBtn').addEventListener('click', function(){ showPick(mode); });
+  document.getElementById('changeBtn').addEventListener('click', function(){ showPick(mode); });
+  document.getElementById('restartBtn').addEventListener('click', function(){ if(me && state !== 'menu' && state !== 'pick') startMatch(me, rival); });
+
+  showMode();
+  updateBoard();
+  requestAnimationFrame(loop);
+})();
+</script>
 </body>
 </html>
