@@ -442,6 +442,10 @@
   loadImg('joaquin-chroma-front-run-a', 'assets/asset-013.webp');
   loadImg('joaquin-chroma-front-run-b', 'assets/asset-014.webp');
   loadImg('joaquin-chroma-front-kick',  'assets/asset-015.webp');
+  // Joaquín front STAND (feet together, still) for the atajar wait: the run
+  // stride A he waited with before left one leg back mid-stride.
+  loadImg('joaquin-chroma-front-stand', 'assets/joaquin-chroma-front-stand.webp');
+  var FRONT_STAND_POSE = { joaquin: 'joaquin-chroma-front-stand' };
   var FRONT_RUN_POSE  = { ronaldo: ['ronaldo-chroma-front-run-a', 'ronaldo-chroma-front-run-b'],
                           messi:   ['messi-chroma-front-run-a', 'messi-chroma-front-run-b'],
                           mbappe:  ['mbappe-chroma-front-run-a', 'mbappe-chroma-front-run-b'],
@@ -1927,7 +1931,7 @@
       // higher — his feet at 556/522 clear my keeper's head (888−272=616)
       // with grass to spare, instead of standing on top of him.
       var rX = 334, rY = 556 + Math.sin(tSec*2.1)*3, rRot = Math.sin(tSec*1.3)*0.012;
-      var rKey = (rival && typeof FRONT_RUN_POSE !== 'undefined' && FRONT_RUN_POSE[rival.id]) ? FRONT_RUN_POSE[rival.id][0] : (rival ? rival.id+'-front' : 'messi-front');
+      var rKey = (rival && typeof FRONT_STAND_POSE !== 'undefined' && FRONT_STAND_POSE[rival.id]) ? FRONT_STAND_POSE[rival.id] : (rival && typeof FRONT_RUN_POSE !== 'undefined' && FRONT_RUN_POSE[rival.id]) ? FRONT_RUN_POSE[rival.id][0] : (rival ? rival.id+'-front' : 'messi-front');
       var rH = 190; // the rival's drawn height — a front-run rival grows it as he nears the camera
       // A rival with a FRONT set (Ronaldo first, Messi after him, Mbappé third, Neymar fourth, Joaquín fifth and last) runs TOWARD the
       // camera in atajar: he waits on the FAR side of his ball — feet
