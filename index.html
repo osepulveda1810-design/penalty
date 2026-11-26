@@ -325,10 +325,10 @@
   var KICK_POSE = {}; // filled per player from his own id in the loop below
   var RUN_POSE  = {}; // filled per player from his own id in the loop below
   CHROMA_PLAYERS.forEach(function(id){
-    loadImg(id+'-back',         'assets/'+id+'-chroma-stand.webp';
-    loadImg(id+'-chroma-run-a', 'assets/'+id+'-chroma-run-a.webp';
-    loadImg(id+'-chroma-run-b', 'assets/'+id+'-chroma-run-b.webp';
-    loadImg(id+'-chroma-kick',  'assets/'+id+'-chroma-kick.webp';
+    loadImg(id+'-back',         'assets/'+id+'-chroma-stand.webp');
+    loadImg(id+'-chroma-run-a', 'assets/'+id+'-chroma-run-a.webp');
+    loadImg(id+'-chroma-run-b', 'assets/'+id+'-chroma-run-b.webp');
+    loadImg(id+'-chroma-kick',  'assets/'+id+'-chroma-kick.webp');
     KICK_POSE[id] = id+'-chroma-kick';
     RUN_POSE[id]  = [id+'-chroma-run-a', id+'-chroma-run-b'];
   });
@@ -351,9 +351,9 @@
   // untouched, and the other shooters kept their current atajar
   // run until their own front set arrived (one at a time, like every
   // set before this one).
-  loadImg('ronaldo-chroma-front-run-a', 'assets/asset-001.webp';
-  loadImg('ronaldo-chroma-front-run-b', 'assets/asset-002.webp';
-  loadImg('ronaldo-chroma-front-kick',  'assets/asset-003.webp';
+  loadImg('ronaldo-chroma-front-run-a', 'assets/asset-001.webp');
+  loadImg('ronaldo-chroma-front-run-b', 'assets/asset-002.webp');
+  loadImg('ronaldo-chroma-front-kick',  'assets/asset-003.webp');
 
   // ---------- Messi FRONT set, for atajar view ONLY ----------
   // The second shooter with a front set, same deal as Ronaldo's: three
@@ -371,9 +371,9 @@
   // is the rival shooter in atajar view; in patear he keeps his back
   // set (strides A v5 / B v4 and his back kick) untouched, and Neymar
   // and Joaquín keep their current atajar run for now.
-  loadImg('messi-chroma-front-run-a', 'assets/asset-004.webp';
-  loadImg('messi-chroma-front-run-b', 'assets/asset-005.webp';
-  loadImg('messi-chroma-front-kick',  'assets/asset-006.webp';
+  loadImg('messi-chroma-front-run-a', 'assets/asset-004.webp');
+  loadImg('messi-chroma-front-run-b', 'assets/asset-005.webp');
+  loadImg('messi-chroma-front-kick',  'assets/asset-006.webp');
 
   // ---------- Mbappé FRONT set, for atajar view ONLY ----------
   // The third shooter with a front set, same deal as Ronaldo's and
@@ -391,9 +391,9 @@
   // atajar view; in patear he keeps his back set (strides A v3 / B v3
   // and his back kick) untouched, and Joaquín kept his current atajar
   // run for now (Neymar's own front set comes right below).
-  loadImg('mbappe-chroma-front-run-a', 'assets/asset-007.webp';
-  loadImg('mbappe-chroma-front-run-b', 'assets/asset-008.webp';
-  loadImg('mbappe-chroma-front-kick',  'assets/asset-009.webp';
+  loadImg('mbappe-chroma-front-run-a', 'assets/asset-007.webp');
+  loadImg('mbappe-chroma-front-run-b', 'assets/asset-008.webp');
+  loadImg('mbappe-chroma-front-kick',  'assets/asset-009.webp');
 
   // ---------- Neymar FRONT set, for atajar view ONLY ----------
   // The fourth shooter with a front set, same deal as Ronaldo's,
@@ -415,9 +415,9 @@
   // rival shooter in atajar view; in patear he keeps his back set
   // (strides A v2 / B v3 and his back kick) untouched, and Joaquín's
   // own front set comes right below.
-  loadImg('neymar-chroma-front-run-a', 'assets/asset-010.webp';
-  loadImg('neymar-chroma-front-run-b', 'assets/asset-011.webp';
-  loadImg('neymar-chroma-front-kick',  'assets/asset-012.webp';
+  loadImg('neymar-chroma-front-run-a', 'assets/asset-010.webp');
+  loadImg('neymar-chroma-front-run-b', 'assets/asset-011.webp');
+  loadImg('neymar-chroma-front-kick',  'assets/asset-012.webp');
 
   // ---------- Joaquín FRONT set, for atajar view ONLY ----------
   // The fifth shooter with a front set, the LAST one, same deal as
@@ -439,9 +439,9 @@
   // patear he keeps his back set (strides A v3 / B v3 and his back
   // kick) untouched. With him, all five shooters run TOWARD the
   // camera in atajar.
-  loadImg('joaquin-chroma-front-run-a', 'assets/asset-013.webp';
-  loadImg('joaquin-chroma-front-run-b', 'assets/asset-014.webp';
-  loadImg('joaquin-chroma-front-kick',  'assets/asset-015.webp';
+  loadImg('joaquin-chroma-front-run-a', 'assets/asset-013.webp');
+  loadImg('joaquin-chroma-front-run-b', 'assets/asset-014.webp');
+  loadImg('joaquin-chroma-front-kick',  'assets/asset-015.webp');
   var FRONT_RUN_POSE  = { ronaldo: ['ronaldo-chroma-front-run-a', 'ronaldo-chroma-front-run-b'],
                           messi:   ['messi-chroma-front-run-a', 'messi-chroma-front-run-b'],
                           mbappe:  ['mbappe-chroma-front-run-a', 'mbappe-chroma-front-run-b'],
@@ -465,9 +465,9 @@
   // rival keeper in patear view he simply IS the new blue number 1. (In
   // atajar view he now stands and dives with his BACK set instead —
   // loaded right below — because there the camera is behind him.)
-  loadImg('martinez-front',            'assets/asset-016.webp';
-  loadImg('martinez-chroma-dive-left',  'assets/asset-017.webp';
-  loadImg('martinez-chroma-dive-right', 'assets/asset-018.webp';
+  loadImg('martinez-front',            'assets/asset-016.webp');
+  loadImg('martinez-chroma-dive-left',  'assets/asset-017.webp');
+  loadImg('martinez-chroma-dive-right', 'assets/asset-018.webp');
 
   // ---------- Martínez BACK set, for atajar view ONLY ----------
   // Oscar's correction: in atajar the camera sits behind my keeper, so he
@@ -484,9 +484,9 @@
   // crossed between keepers. The other four keepers have no back set yet
   // (one at a time, like the front sets) and keep their front poses in
   // atajar for now.
-  loadImg('martinez-chroma-back-stand',      'assets/asset-019.webp';
-  loadImg('martinez-chroma-back-dive-left',  'assets/asset-020.webp';
-  loadImg('martinez-chroma-back-dive-right', 'assets/asset-021.webp';
+  loadImg('martinez-chroma-back-stand',      'assets/asset-019.webp');
+  loadImg('martinez-chroma-back-dive-left',  'assets/asset-020.webp');
+  loadImg('martinez-chroma-back-dive-right', 'assets/asset-021.webp');
 
   // ---------- Courtois BACK set, for atajar view ONLY ----------
   // The second keeper seen from behind in atajar, exactly like Martínez:
@@ -500,9 +500,9 @@
   // Courtois is MY keeper in atajar view; as the rival keeper in patear
   // view he keeps his front set above. His high diagonal pair comes
   // right below, with Martínez's — an upward drag now flies him too.
-  loadImg('courtois-chroma-back-stand',      'assets/asset-022.webp';
-  loadImg('courtois-chroma-back-dive-left',  'assets/asset-023.webp';
-  loadImg('courtois-chroma-back-dive-right', 'assets/asset-024.webp';
+  loadImg('courtois-chroma-back-stand',      'assets/asset-022.webp');
+  loadImg('courtois-chroma-back-dive-left',  'assets/asset-023.webp');
+  loadImg('courtois-chroma-back-dive-right', 'assets/asset-024.webp');
 
   // ---------- Martínez BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
   // Two more back poses of his, on the same flat #00FF00 and keyed by the
@@ -512,8 +512,8 @@
   // up; a drag along the ground keeps his horizontal back dives above.
   // Only Martínez has them — the other four keepers fly only along the
   // ground, exactly as before, until their turn comes.
-  loadImg('martinez-chroma-back-dive-high-left',  'assets/asset-025.webp';
-  loadImg('martinez-chroma-back-dive-high-right', 'assets/asset-026.webp';
+  loadImg('martinez-chroma-back-dive-high-left',  'assets/asset-025.webp');
+  loadImg('martinez-chroma-back-dive-high-right', 'assets/asset-026.webp');
 
   // ---------- Courtois BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
   // The same two diagonal flights, now for Courtois: from behind, dark-
@@ -528,8 +528,8 @@
   // keeps his horizontal back dives above. Only Martínez, Courtois and
   // Alisson have them — the other two keepers fly only along the
   // ground, exactly as before, until their turn comes.
-  loadImg('courtois-chroma-back-dive-high-left',  'assets/asset-027.webp';
-  loadImg('courtois-chroma-back-dive-high-right', 'assets/asset-028.webp';
+  loadImg('courtois-chroma-back-dive-high-left',  'assets/asset-027.webp');
+  loadImg('courtois-chroma-back-dive-high-right', 'assets/asset-028.webp');
 
   // ---------- Courtois in chroma: the second keeper with his OWN set ----------
   // Same deal as Martínez: three front poses of his own — standing ready,
@@ -544,9 +544,9 @@
   // the dark-green shirt, shorts and socks, the white 1 and the gloves
   // come through whole. Only the bright chroma is removed, exactly as
   // ordered: the dark green of the kit is a different green and stays.
-  loadImg('courtois-front',            'assets/asset-029.webp';
-  loadImg('courtois-chroma-dive-left',  'assets/asset-030.webp';
-  loadImg('courtois-chroma-dive-right', 'assets/asset-031.webp';
+  loadImg('courtois-front',            'assets/asset-029.webp');
+  loadImg('courtois-chroma-dive-left',  'assets/asset-030.webp');
+  loadImg('courtois-chroma-dive-right', 'assets/asset-031.webp');
 
   // ---------- Alisson in chroma: the third keeper with his OWN set ----------
   // Same deal again: three front poses of his own — standing ready, dive
@@ -560,9 +560,9 @@
   // only bites at dominance ≥110 with g ≥150, cannot touch a single kit
   // pixel. The yellow shirt, shorts and socks, the white 1 and the black
   // gloves come through whole; only the bright chroma is removed.
-  loadImg('alisson-front',            'assets/asset-032.webp';
-  loadImg('alisson-chroma-dive-left',  'assets/asset-033.webp';
-  loadImg('alisson-chroma-dive-right', 'assets/asset-034.webp';
+  loadImg('alisson-front',            'assets/asset-032.webp');
+  loadImg('alisson-chroma-dive-left',  'assets/asset-033.webp');
+  loadImg('alisson-chroma-dive-right', 'assets/asset-034.webp');
 
   // ---------- Alisson BACK set, for atajar view ONLY ----------
   // The third keeper seen from behind in atajar, exactly like Martínez
@@ -577,9 +577,9 @@
   // view he keeps his front set above. His high diagonal pair comes
   // right below, with Martínez's and Courtois's — an upward drag now
   // flies him too.
-  loadImg('alisson-chroma-back-stand',      'assets/asset-035.webp';
-  loadImg('alisson-chroma-back-dive-left',  'assets/asset-036.webp';
-  loadImg('alisson-chroma-back-dive-right', 'assets/asset-037.webp';
+  loadImg('alisson-chroma-back-stand',      'assets/asset-035.webp');
+  loadImg('alisson-chroma-back-dive-left',  'assets/asset-036.webp');
+  loadImg('alisson-chroma-back-dive-right', 'assets/asset-037.webp');
 
   // ---------- Alisson BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
   // The same two diagonal flights, now for Alisson: from behind, yellow
@@ -594,8 +594,8 @@
   // drag keeps his horizontal back dives above. Donnarumma has since
   // landed his pair too (loaded with his back set below), and
   // Casillas, the last one, has his below as well.
-  loadImg('alisson-chroma-back-dive-high-left',  'assets/asset-038.webp';
-  loadImg('alisson-chroma-back-dive-high-right', 'assets/asset-039.webp';
+  loadImg('alisson-chroma-back-dive-high-left',  'assets/asset-038.webp');
+  loadImg('alisson-chroma-back-dive-high-right', 'assets/asset-039.webp');
 
   // ---------- Donnarumma in chroma: the fourth keeper with his OWN set ----------
   // Same deal again: three front poses of his own — standing ready, dive
@@ -610,9 +610,9 @@
   // while the backgrounds measure ≈249. The key erases ONLY the bright
   // chroma: the teal-green shirt, shorts and socks, the white 23 and the
   // gloves come through whole.
-  loadImg('donnarumma-front',            'assets/asset-040.webp';
-  loadImg('donnarumma-chroma-dive-left',  'assets/asset-041.webp';
-  loadImg('donnarumma-chroma-dive-right', 'assets/asset-042.webp';
+  loadImg('donnarumma-front',            'assets/asset-040.webp');
+  loadImg('donnarumma-chroma-dive-left',  'assets/asset-041.webp');
+  loadImg('donnarumma-chroma-dive-right', 'assets/asset-042.webp');
 
   // ---------- Donnarumma BACK set, for atajar view ONLY ----------
   // The fourth keeper seen from behind in atajar, exactly like Martínez,
@@ -629,9 +629,9 @@
   // keeper in atajar view; as the rival keeper in patear view he keeps
   // his front set above. His high diagonal pair comes right below,
   // like the others got theirs after their back sets.
-  loadImg('donnarumma-chroma-back-stand',      'assets/asset-043.webp';
-  loadImg('donnarumma-chroma-back-dive-left',  'assets/asset-044.webp';
-  loadImg('donnarumma-chroma-back-dive-right', 'assets/asset-045.webp';
+  loadImg('donnarumma-chroma-back-stand',      'assets/asset-043.webp');
+  loadImg('donnarumma-chroma-back-dive-left',  'assets/asset-044.webp');
+  loadImg('donnarumma-chroma-back-dive-right', 'assets/asset-045.webp');
 
   // ---------- Donnarumma BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
   // The same two diagonal flights, now for Donnarumma: from behind,
@@ -649,8 +649,8 @@
   // an upward drag flies him diagonally, a ground-level drag keeps his
   // horizontal back dives above. Only Casillas still flew only along
   // the ground then — his pair comes below, the last of the five.
-  loadImg('donnarumma-chroma-back-dive-high-left',  'assets/asset-046.webp';
-  loadImg('donnarumma-chroma-back-dive-high-right', 'assets/asset-047.webp';
+  loadImg('donnarumma-chroma-back-dive-high-left',  'assets/asset-046.webp');
+  loadImg('donnarumma-chroma-back-dive-high-right', 'assets/asset-047.webp');
 
   // ---------- Casillas in chroma: the fifth keeper, the LAST own set ----------
   // Same deal again: three front poses of his own — standing ready, dive
@@ -666,9 +666,9 @@
   // the white 1 and the black gloves come through whole. With him, all
   // five keepers dive with their OWN chroma set — nobody uses the
   // generic poses any more (the fallback in keeperDiveKey stays, unused).
-  loadImg('casillas-front',            'assets/asset-048.webp';
-  loadImg('casillas-chroma-dive-left',  'assets/asset-049.webp';
-  loadImg('casillas-chroma-dive-right', 'assets/asset-050.webp';
+  loadImg('casillas-front',            'assets/asset-048.webp');
+  loadImg('casillas-chroma-dive-left',  'assets/asset-049.webp');
+  loadImg('casillas-chroma-dive-right', 'assets/asset-050.webp');
 
   // ---------- Casillas BACK set, for atajar view ONLY ----------
   // The fifth and LAST keeper seen from behind in atajar, exactly like
@@ -687,9 +687,9 @@
   // keeper in patear view he keeps his front set above. His high
   // diagonal pair comes right below, like the others got theirs after
   // their back sets.
-  loadImg('casillas-chroma-back-stand',      'assets/asset-051.webp';
-  loadImg('casillas-chroma-back-dive-left',  'assets/asset-052.webp';
-  loadImg('casillas-chroma-back-dive-right', 'assets/asset-053.webp';
+  loadImg('casillas-chroma-back-stand',      'assets/asset-051.webp');
+  loadImg('casillas-chroma-back-dive-left',  'assets/asset-052.webp');
+  loadImg('casillas-chroma-back-dive-right', 'assets/asset-053.webp');
 
   // ---------- Casillas BACK HIGH dives: diagonal, gloves up (atajar ONLY) ----------
   // The same two diagonal flights, now for Casillas — the FIFTH and
@@ -711,8 +711,8 @@
   // (kHigh, highDivePlace, the moving save point): an upward drag
   // flies him diagonally, a ground-level drag keeps his horizontal
   // back dives above. With him, ALL FIVE keepers fly diagonally.
-  loadImg('casillas-chroma-back-dive-high-left',  'assets/asset-054.webp';
-  loadImg('casillas-chroma-back-dive-high-right', 'assets/asset-055.webp';
+  loadImg('casillas-chroma-back-dive-high-left',  'assets/asset-054.webp');
+  loadImg('casillas-chroma-back-dive-high-right', 'assets/asset-055.webp');
   var KEEPER_DIVE = { martinez:{left:'martinez-chroma-dive-left', right:'martinez-chroma-dive-right'},
                       courtois:{left:'courtois-chroma-dive-left', right:'courtois-chroma-dive-right'},
                       alisson:{left:'alisson-chroma-dive-left', right:'alisson-chroma-dive-right'},
