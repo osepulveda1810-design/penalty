@@ -1,5 +1,5 @@
 /* Penales 3D — service worker: juega sin conexión tras la primera visita. */
-const CACHE = 'penales-3d-v2';
+const CACHE = 'penales-3d-v3';
 const CORE = [
   './',
   './index.html',
