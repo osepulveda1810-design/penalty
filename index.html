@@ -1898,7 +1898,7 @@
       // higher — his feet at 556/522 clear my keeper's head (888−272=616)
       // with grass to spare, instead of standing on top of him.
       var rX = 334, rY = 556 + Math.sin(tSec*2.1)*3, rRot = Math.sin(tSec*1.3)*0.012;
-      var rKey = rival ? rival.id+'-front' : 'messi-front';
+      var rKey = (rival && typeof FRONT_RUN_POSE !== 'undefined' && FRONT_RUN_POSE[rival.id]) ? FRONT_RUN_POSE[rival.id][0] : (rival ? rival.id+'-front' : 'messi-front');
       var rH = 190; // the rival's drawn height — a front-run rival grows it as he nears the camera
       // A rival with a FRONT set (Ronaldo first, Messi after him, Mbappé third, Neymar fourth, Joaquín fifth and last) runs TOWARD the
       // camera in atajar: he waits on the FAR side of his ball — feet
